@@ -1,0 +1,24 @@
+{
+  "name": "xml-thresher",
+  "version": "1.0.0",
+  "description": "Reading from xml schema aware",
+  "main": "index.js",
+  "license": "MIT",
+  "private": null,
+  "dependencies": {
+    "mio": "mandreyel/mio",
+    "openssl": "openssl/openssl#OpenSSL_1_1_1w",
+    "fmt": "fmtlib/fmt",
+    "antlr4": "antlr/antlr4",
+    "zlib": "madler/zlib"
+  },
+  "devDependencies": {
+    "doctest": "onqtam/doctest"
+  },
+  "scripts": {
+    "lib": "which make && make -j 3 -f Makefile all",
+    "fmt": "cd cpp_modules/fmt && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../dist .. && make install",
+    "build": "cd test && pwd && mkdir -p build/src && which make && make  -f Makefile all",
+    "test": "cnpm build && cd test && pwd && ./test --test-suite='bindings' "
+  }
+}
