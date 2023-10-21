@@ -17,7 +17,7 @@ TEST_SUITE("bindings"){
 TEST_CASE("test graphml schema")
 {
     sylvanmats::io::xml::Binder xmlReaper("../../cifio/schemas/graphml/graphml.xsd", "");
-    xmlReaper([](std::u16string& utf16, std::vector<std::pair<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>, std::vector<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>>>>& dag){});
+    xmlReaper([](std::u16string& utf16, std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>& dag){});
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
     std::cout<<xmlReaper.version<<" "<<xmlReaper.encoding<<" "<<cv.to_bytes(std::u16string(xmlReaper.schemaPrefix.begin(), xmlReaper.schemaPrefix.end()))<<std::endl;
     CHECK_EQ(xmlReaper.version, std::string("1.0"));
@@ -33,7 +33,7 @@ TEST_CASE("test graphml schema")
 TEST_CASE("test graphml schema angle bracket hunt")
 {
     sylvanmats::io::xml::Binder xmlReaper("../../cifio/schemas/graphml/graphml.xsd", "");
-    xmlReaper([](std::u16string& utf16, std::vector<std::pair<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>, std::vector<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>>>>& dag){});
+    xmlReaper([](std::u16string& utf16, std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>& dag){});
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
     std::cout<<xmlReaper.version<<" "<<xmlReaper.encoding<<" "<<cv.to_bytes(std::u16string(xmlReaper.schemaPrefix.begin(), xmlReaper.schemaPrefix.end()))<<std::endl;
     CHECK_EQ(xmlReaper.version, std::string("1.0"));
@@ -49,7 +49,7 @@ TEST_CASE("test graphml schema angle bracket hunt")
 TEST_CASE("test graphml xml")
 {
     sylvanmats::io::xml::Binder xmlReaper("../../cifio/db/oxygen_fragments.graphml", "");
-    xmlReaper([](std::u16string& utf16, std::vector<std::pair<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>, std::vector<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>>>>& dag){});
+    xmlReaper([](std::u16string& utf16, std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>& dag){});
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
     std::cout<<xmlReaper.version<<" "<<xmlReaper.encoding<<" "<<cv.to_bytes(std::u16string(xmlReaper.schemaPrefix.begin(), xmlReaper.schemaPrefix.end()))<<std::endl;
     CHECK_EQ(xmlReaper.version, std::string("1.0"));

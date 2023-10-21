@@ -26,9 +26,9 @@ namespace std{
 
 namespace sylvanmats::io::xml{
 
-Binder::Binder(std::string xsdPath, std::string xmlPath) {
+Binder::Binder(std::string xmlPath, std::string xsdPath) {
     try {
-        const int fdXsd = open(xsdPath.c_str(), O_RDONLY);
+        const int fdXsd = open(xmlPath.c_str(), O_RDONLY);
         mio::mmap_source mmapXsd(fdXsd, 0, mio::map_entire_file);
         mio::mmap_source::const_iterator itg=mmapXsd.begin();
         if(!findProlog(itg))itg=mmapXsd.begin();
@@ -64,7 +64,7 @@ Binder::Binder(std::string xsdPath, std::string xmlPath) {
                     }
                     if((*temp)==u'>'){
                         size_t angleEnd=std::distance(utf16.cbegin(), temp);
-                        dag.push_back(std::make_pair(std::make_tuple(dag.size(), angleStart, forwardSlash, angleSpace, forwardSlash2, angleEnd), std::vector<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>>{}));
+                        dag.push_back(std::make_pair(tag_indexer{.index=dag.size(), .angle_start=angleStart, .forward_slashA=forwardSlash, .space=angleSpace, .forward_slashB=forwardSlash2, .angle_end=angleEnd}, std::vector<tag_indexer>{}));
                         if(forwardSlash==1){
                             depthList.push_back(depth);
                             if(depth>0)depth--;
@@ -87,10 +87,10 @@ Binder::Binder(std::string xsdPath, std::string xmlPath) {
 //            std::string depthText=fmt::format("{}\n", depthList);
 //            std::cout<<depthText;
             depth=0;
-            std::vector<std::pair<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>, std::vector<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>>>>::iterator previousNode=dag.end();
-            for(std::vector<std::pair<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>, std::vector<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>>>>::iterator itDag=dag.begin();itDag!=dag.end();itDag++){
+            std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>::iterator previousNode=dag.end();
+            for(std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>::iterator itDag=dag.begin();itDag!=dag.end();itDag++){
                 size_t currentDepth=depth;
-                if(std::get<2>((*itDag).first)==0 && std::get<4>((*itDag).first)==0){
+                if((*itDag).first.forward_slashA==0 && (*itDag).first.forward_slashB==0){
                     if(previousNode!=dag.end()){
                         (*previousNode).second.push_back((*itDag).first);
                         (*itDag).second.push_back((*previousNode).first);
@@ -98,9 +98,9 @@ Binder::Binder(std::string xsdPath, std::string xmlPath) {
                     previousNode=itDag;
                     depth++;
                 }
-                else if((std::get<2>((*itDag).first)==1 && std::get<4>((*itDag).first)==0)){
+                else if((*itDag).first.forward_slashA==1 && (*itDag).first.forward_slashB==0){
                     if(previousNode!=dag.end()){
-                        size_t currentOffset=std::get<0>((*itDag).first);
+                        size_t currentOffset=(*itDag).first.index;
                         size_t vOffset=(currentOffset>0) ? currentOffset-1: 0;
                         int currentDepth=(depthList[currentOffset]>0 && currentOffset<depthList.size()-1 && depthList[currentOffset+1]==depthList[currentOffset]) ? depthList[currentOffset]-1: depthList[currentOffset];
                         while(vOffset>0 && currentDepth<depthList[vOffset]){
@@ -113,7 +113,7 @@ Binder::Binder(std::string xsdPath, std::string xmlPath) {
                         (*itDag).second.push_back((*previousNode).first);
                     }
                 }
-                else if((std::get<2>((*itDag).first)==0 && std::get<4>((*itDag).first)==1)){
+                else if((*itDag).first.forward_slashA==0 && (*itDag).first.forward_slashB==1){
                     if(previousNode!=dag.end()){
                         (*previousNode).second.push_back((*itDag).first);
                         (*itDag).second.push_back((*previousNode).first);
@@ -128,7 +128,7 @@ Binder::Binder(std::string xsdPath, std::string xmlPath) {
     
 }
 
-    void Binder::operator()(std::function<void(std::u16string& utf16, std::vector<std::pair<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>, std::vector<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>>>>& dag)> apply){
+    void Binder::operator()(std::function<void(std::u16string& utf16, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag)> apply){
         apply(utf16, dag);
     }
     
@@ -280,7 +280,7 @@ Binder::Binder(std::string xsdPath, std::string xmlPath) {
             }
             size_t forwardSlash=0;
             size_t forwardSlash2=0;
-            dag.push_back(std::make_pair(std::make_tuple(dag.size(), angleStart, forwardSlash, angleSpace, forwardSlash2, angleEnd), std::vector<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>>{}));
+            dag.push_back(std::make_pair(tag_indexer{.index=dag.size(), .angle_start=angleStart, .forward_slashA=forwardSlash, .space=angleSpace, .forward_slashB=forwardSlash2, .angle_end=angleEnd}, std::vector<tag_indexer>{}));
             depthList.push_back(0);
         }
         ++it;

@@ -101,6 +101,15 @@ struct deletable_facet : Facet
 };
 
 namespace sylvanmats::io::xml{
+    
+    struct tag_indexer{
+        size_t index=0;
+        size_t angle_start=0;
+        size_t forward_slashA=0;
+        size_t space=0;
+        size_t forward_slashB=0;
+        size_t angle_end=0;
+    };
 
 template<typename T>
 constexpr size_t range2(std::array<T, 2> arg) {
@@ -156,18 +165,18 @@ protected:
     std::u16string utf16;
     std::u16string_view schemaPrefix;
     std::unordered_map<std::u16string, std::u16string_view> schemaComponentMap;
-    std::vector<std::pair<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>, std::vector<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>>>> dag;
+    std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>> dag;
     std::vector<int> depthList;
 //    constexpr static std::array arr = make_charset_array<char16_t>(range(u'a', u'z'), range(u'_', u'_'), range(u'A', u'Z'));
 //    constexpr static std::array arr = make_charset_array(std::integral_constant<char16_t, u'a'>{}, std::integral_constant<char16_t, u'z'>{});
 
     
 public:
-    Binder(std::string xsdPath, std::string xmlPath);
+    Binder(std::string xmlPath, std::string xsdPath);
     Binder(const Binder& orig) = delete;
     virtual ~Binder() = default;
     
-    void operator()(std::function<void(std::u16string& utf16, std::vector<std::pair<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>, std::vector<std::tuple<size_t, size_t, size_t, size_t, size_t, size_t>>>>& dag)> apply);
+    void operator()(std::function<void(std::u16string& utf16, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag)> apply);
     
     std::u16string findAttribute(std::u16string name, size_t start, size_t end);
 
