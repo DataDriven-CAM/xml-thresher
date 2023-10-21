@@ -167,11 +167,17 @@ protected:
     std::unordered_map<std::u16string, std::u16string_view> schemaComponentMap;
     std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>> dag;
     std::vector<int> depthList;
+    std::u16string xsdUTF16;
+    std::u16string_view xsdSchemaPrefix;
+    std::unordered_map<std::u16string, std::u16string_view> xsdSchemaComponentMap;
+    std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>> xsdDAG;
+    std::vector<int> xsdDepthList;
 //    constexpr static std::array arr = make_charset_array<char16_t>(range(u'a', u'z'), range(u'_', u'_'), range(u'A', u'Z'));
 //    constexpr static std::array arr = make_charset_array(std::integral_constant<char16_t, u'a'>{}, std::integral_constant<char16_t, u'z'>{});
-
+    std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> utf16conv;
     
 public:
+    Binder() = delete;
     Binder(std::string xmlPath, std::string xsdPath);
     Binder(const Binder& orig) = delete;
     virtual ~Binder() = default;
@@ -181,8 +187,9 @@ public:
     std::u16string findAttribute(std::u16string name, size_t start, size_t end);
 
 private:
+    void initializeGraph(std::u16string& utf16, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap);
     bool findProlog(mio::mmap_source::const_iterator& it);
-    bool findSchemaComponents(std::u16string::const_iterator& it);
+    bool findSchemaComponents(std::u16string::const_iterator& it, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap);
     inline void skipOverWhiteSpaces(mio::mmap_source::const_iterator& it){
         while((*it)!=std::char_traits<char>::eof() && std::isspace((*it))){
             ++it;

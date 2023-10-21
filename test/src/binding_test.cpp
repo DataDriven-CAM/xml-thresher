@@ -61,4 +61,21 @@ TEST_CASE("test graphml xml")
     }
    
 }
+
+TEST_CASE("test 4hhb pdb xml")
+{
+    sylvanmats::io::xml::Binder xmlReaper("/home/roger/Downloads/4hhb.xml", "/home/roger/Downloads/pdbx-v50.xsd");
+    xmlReaper([](std::u16string& utf16, std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>& dag){});
+    std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
+    std::cout<<xmlReaper.version<<" "<<xmlReaper.encoding<<" "<<cv.to_bytes(std::u16string(xmlReaper.schemaPrefix.begin(), xmlReaper.schemaPrefix.end()))<<std::endl;
+    CHECK_EQ(xmlReaper.version, std::string("1.0"));
+    CHECK_EQ(xmlReaper.encoding, std::string("UTF-8"));
+    CHECK(!xmlReaper.schemaPrefix.empty());
+    //for(size_t i=0;i<xmlReaper.schemaComponentMap.size();i++)std::cout<<cv.to_bytes(std::u16string(xmlReaper.schemaComponentMap.begin(), xmlReaper.schemaComponentMap.end()))<<std::endl;
+    for( const auto& n : xmlReaper.schemaComponentMap ) {
+        std::cout << "Key:[" << cv.to_bytes(n.first) << "] Value:[" << cv.to_bytes(std::u16string(n.second.begin(), n.second.end())) << "]\n";
+    }
+   
+}
+
 }

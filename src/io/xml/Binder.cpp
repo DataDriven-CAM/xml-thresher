@@ -27,18 +27,61 @@ namespace std{
 namespace sylvanmats::io::xml{
 
 Binder::Binder(std::string xmlPath, std::string xsdPath) {
+    if(!xsdPath.empty()){
+        try {
+            const int fdXsd = open(xsdPath.c_str(), O_RDONLY);
+            mio::mmap_source mmapXsd(fdXsd, 0, mio::map_entire_file);
+            mio::mmap_source::const_iterator itg=mmapXsd.begin();
+            if(!findProlog(itg))itg=mmapXsd.begin();
+            else{
+                xsdUTF16 = utf16conv.from_bytes(&(*itg));
+                initializeGraph(xsdUTF16, xsdDepthList, xsdDAG, xsdSchemaComponentMap);
+            }
+
+        } catch (std::exception& e) {
+            std::cout << e.what() << std::endl;
+        }
+    }
     try {
-        const int fdXsd = open(xmlPath.c_str(), O_RDONLY);
-        mio::mmap_source mmapXsd(fdXsd, 0, mio::map_entire_file);
-        mio::mmap_source::const_iterator itg=mmapXsd.begin();
-        if(!findProlog(itg))itg=mmapXsd.begin();
+        const int fdXml = open(xmlPath.c_str(), O_RDONLY);
+        mio::mmap_source mmapXml(fdXml, 0, mio::map_entire_file);
+        mio::mmap_source::const_iterator itg=mmapXml.begin();
+        if(!findProlog(itg))itg=mmapXml.begin();
         else{
-            std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> utf16conv;
             utf16 = utf16conv.from_bytes(&(*itg));
+            initializeGraph(utf16, depthList, dag, schemaComponentMap);
+        }
+        
+    } catch (std::exception& e) {
+        std::cout << e.what() << std::endl;
+    }
+    
+}
+
+    void Binder::operator()(std::function<void(std::u16string& utf16, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag)> apply){
+        apply(utf16, dag);
+    }
+    
+    std::u16string Binder::findAttribute(std::u16string name, size_t start, size_t end){
+        std::u16string attr=name+u"=\"";
+        std::u16string::size_type offset=utf16.substr(start, end-start).find(attr);
+        if(offset!=std::u16string::npos){
+            offset=start+offset+attr.size();
+            std::u16string::size_type endOffset=offset;
+            while(endOffset<end && utf16.at(endOffset)!=u'"'){
+                endOffset++;
+            }
+            if(endOffset<end)return utf16.substr(offset, endOffset-offset);
+        }
+        return u"";
+    }
+    
+    void Binder::initializeGraph(std::u16string& utf16, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap){
+
             std::u16string::const_iterator it = utf16.cbegin();
             int count=0;
             skipOverWhiteSpaces(it);
-            findSchemaComponents(it);
+            findSchemaComponents(it, depthList, dag, schemaComponentMap);
             skipOverWhiteSpaces(it);
             std::u16string::const_iterator temp=it;
             std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> cv;
@@ -120,30 +163,6 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) {
                     }
                 }
             }
-        }
-        
-    } catch (std::exception& e) {
-        std::cout << e.what() << std::endl;
-    }
-    
-}
-
-    void Binder::operator()(std::function<void(std::u16string& utf16, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag)> apply){
-        apply(utf16, dag);
-    }
-    
-    std::u16string Binder::findAttribute(std::u16string name, size_t start, size_t end){
-        std::u16string attr=name+u"=\"";
-        std::u16string::size_type offset=utf16.substr(start, end-start).find(attr);
-        if(offset!=std::u16string::npos){
-            offset=start+offset+attr.size();
-            std::u16string::size_type endOffset=offset;
-            while(endOffset<end && utf16.at(endOffset)!=u'"'){
-                endOffset++;
-            }
-            if(endOffset<end)return utf16.substr(offset, endOffset-offset);
-        }
-        return u"";
     }
     
     bool Binder::findProlog(mio::mmap_source::const_iterator& it){
@@ -228,7 +247,7 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) {
         return true;
     }
     
-    bool Binder::findSchemaComponents(std::u16string::const_iterator& it){
+    bool Binder::findSchemaComponents(std::u16string::const_iterator& it, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap){
         if((*it)=='<'){
             size_t angleStart=std::distance(utf16.cbegin(), it);
             size_t angleSpace=0;
