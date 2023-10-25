@@ -19,6 +19,6 @@
     "lib": "which make && make -j 3 -f Makefile all",
     "fmt": "cd cpp_modules/fmt && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../dist .. && make install",
     "build": "cd test && pwd && mkdir -p build/src && which make && make  -f Makefile all",
-    "test": "cnpm build && cd test && pwd && ./test --test-suite='bindings' "
+    "test": "cnpm build && cd test && pwd && ./test --test-case='test 4hhb pdb xml' "
   }
 }

@@ -175,6 +175,7 @@ protected:
 //    constexpr static std::array arr = make_charset_array<char16_t>(range(u'a', u'z'), range(u'_', u'_'), range(u'A', u'Z'));
 //    constexpr static std::array arr = make_charset_array(std::integral_constant<char16_t, u'a'>{}, std::integral_constant<char16_t, u'z'>{});
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> utf16conv;
+    std::locale loc;
     
 public:
     Binder() = delete;
@@ -189,7 +190,7 @@ public:
 private:
     void initializeGraph(std::u16string& utf16, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap);
     bool findProlog(mio::mmap_source::const_iterator& it);
-    bool findSchemaComponents(std::u16string::const_iterator& it, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap);
+    bool findSchemaComponents(std::u16string& utf16, std::u16string::const_iterator& it, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap);
     inline void skipOverWhiteSpaces(mio::mmap_source::const_iterator& it){
         while((*it)!=std::char_traits<char>::eof() && std::isspace((*it))){
             ++it;
@@ -209,12 +210,12 @@ private:
     ////wide char
     inline bool inCharSet(char16_t c){ return (c>=0x1 && c<=0xD7FF) | (c>=0xE000 && c<=0xFFFD) | (c>=0x10000 && c<=0x10FFFF);};
     inline void skipOverWhiteSpaces(std::u16string::const_iterator& it){
-        while((*it)!=std::char_traits<char16_t>::eof() && std::isspace((*it))){
+        while((*it)!=std::char_traits<char16_t>::eof() && ((*(it))==u' ' || (*(it))==u'\f' || (*(it))==u'\n' || (*(it))==u'\r' || (*(it))==u'\t' || (*(it))==u'\v')){//std::isspace<char16_t>(static_cast<int>(*it), loc)){
             ++it;
         }
     };
     inline bool skipToWhiteSpace(std::u16string::const_iterator& it){
-        while((*it)!=std::char_traits<char16_t>::eof() && !std::isspace((*it))){
+        while((*it)!=std::char_traits<char16_t>::eof() && !((*(it))==u' ' || (*(it))==u'\f' || (*(it))==u'\n' || (*(it))==u'\r' || (*(it))==u'\t' || (*(it))==u'\v')){//!std::isspace<char16_t>(static_cast<int>(*it), loc)){
             ++it;
         }
         return (*it)!=std::char_traits<char16_t>::eof();
@@ -228,7 +229,17 @@ private:
         std::advance(it, n);
         return true;
     };
+    inline bool commentStart(std::u16string::const_iterator& it){
+        if((*(it))==u'<' && (*(it+1))==u'!' && (*(it+2))==u'-' && (*(it+3))==u'-')return true;
+        return false;
+    };
     
+    inline void skipOverComment(std::u16string::const_iterator& it){
+        while(!((*(it))==u'-' && (*(it+1))==u'-' && (*(it+2))==u'>')){
+            ++it;
+        }
+        if((*it)!=std::char_traits<char16_t>::eof())std::advance(it, 3);
+    };
 };
 
 }

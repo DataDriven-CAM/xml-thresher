@@ -8,6 +8,7 @@
 #include <doctest/doctest.h>
 #include <iostream>
 #include <string>
+#include <chrono>
 #include <locale>
 #include <codecvt>
 #define protected public
@@ -64,8 +65,11 @@ TEST_CASE("test graphml xml")
 
 TEST_CASE("test 4hhb pdb xml")
 {
-    sylvanmats::io::xml::Binder xmlReaper("/home/roger/Downloads/4hhb.xml", "/home/roger/Downloads/pdbx-v50.xsd");
+        auto start = std::chrono::high_resolution_clock::now();
+     sylvanmats::io::xml::Binder xmlReaper("/home/roger/Downloads/4hhb.xml", "/home/roger/Downloads/pdbx-v50.xsd");
     xmlReaper([](std::u16string& utf16, std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>& dag){});
+        auto end = std::chrono::high_resolution_clock::now();
+        std::cout << "4hhb time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count()*1.0e-9 << "s\n";
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
     std::cout<<xmlReaper.version<<" "<<xmlReaper.encoding<<" "<<cv.to_bytes(std::u16string(xmlReaper.schemaPrefix.begin(), xmlReaper.schemaPrefix.end()))<<std::endl;
     CHECK_EQ(xmlReaper.version, std::string("1.0"));

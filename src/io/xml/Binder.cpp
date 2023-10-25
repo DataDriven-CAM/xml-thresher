@@ -11,7 +11,10 @@
  * Created on February 22, 2020, 7:58 AM
  */
 
+#include "io/xml/Path.h"
 #include "io/xml/Binder.h"
+
+#include <ranges>
 
 namespace std{
     size_t u16ncmp(const char16_t* a, const char16_t* b, size_t n){
@@ -26,7 +29,7 @@ namespace std{
 
 namespace sylvanmats::io::xml{
 
-Binder::Binder(std::string xmlPath, std::string xsdPath) {
+Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_US.UTF-8"), new std::codecvt_utf8<char16_t>) {
     if(!xsdPath.empty()){
         try {
             const int fdXsd = open(xsdPath.c_str(), O_RDONLY);
@@ -34,8 +37,28 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) {
             mio::mmap_source::const_iterator itg=mmapXsd.begin();
             if(!findProlog(itg))itg=mmapXsd.begin();
             else{
-                xsdUTF16 = utf16conv.from_bytes(&(*itg));
+                xsdUTF16 = utf16conv.from_bytes(&mmapXsd[std::distance(mmapXsd.begin(), itg)]);
                 initializeGraph(xsdUTF16, xsdDepthList, xsdDAG, xsdSchemaComponentMap);
+//            std::string depthText=fmt::format("{}\n", xsdDepthList);
+//            std::cout<<depthText;
+    sylvanmats::io::xml::Path<std::u16string>&& path=u"/xsd:schema/xsd:element"_xp;
+    std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>::iterator itDAG=xsdDAG.begin();
+    sylvanmats::io::xml::Path<std::u16string>::iterator it=path.begin();
+    if(itDAG!=xsdDAG.end() && (xsdUTF16.substr((*itDAG).first.angle_start+1, (*itDAG).first.space-(*itDAG).first.angle_start-1).compare((*it))==0)){
+        std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> cv;
+//        std::cout<<"index "<<(*itDAG).first.index<<" "<<cv.to_bytes(xsdUTF16.substr((*itDAG).first.angle_start+1, (*itDAG).first.space-(*itDAG).first.angle_start-1))<<std::endl;
+//        std::cout<<"angle_start "<<(*itDAG).first.angle_start<<std::endl;
+//        std::cout<<"space "<<(*itDAG).first.space<<std::endl;
+//        std::cout<<"angle_end "<<(*itDAG).first.angle_end<<std::endl;
+        ++it;
+        std::cout<<"match begin "<<" "<<(*itDAG).second.size()<<" "<<cv.to_bytes((*it))<<std::endl;
+        for(auto itS : (*itDAG).second | std::views::filter([&](sylvanmats::io::xml::tag_indexer& di){ return xsdUTF16.substr(di.angle_start, di.angle_end-di.angle_start).starts_with(u"<"+(*it)); })){
+        std::cout<<"index "<<itS.index<<" "<<cv.to_bytes(xsdUTF16.substr(itS.angle_start+1, itS.angle_end-itS.angle_start-1))<<std::endl;
+            
+        }
+        
+    }
+                
             }
 
         } catch (std::exception& e) {
@@ -79,14 +102,20 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) {
     void Binder::initializeGraph(std::u16string& utf16, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap){
 
             std::u16string::const_iterator it = utf16.cbegin();
+            std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> cv;
             int count=0;
-            skipOverWhiteSpaces(it);
-            findSchemaComponents(it, depthList, dag, schemaComponentMap);
+            bool commentsOnly=true;
+            while(commentsOnly && it!=utf16.end()){
+                skipOverWhiteSpaces(it);
+                if(commentStart(it)){std::cout<<"skip pro comment "<<cv.to_bytes(utf16.substr(std::distance(utf16.cbegin(), it), 20))<<std::endl;std::advance(it, 4);skipOverComment(it);}
+                else commentsOnly=false;
+            }
+            findSchemaComponents(utf16, it, depthList, dag, schemaComponentMap);
             skipOverWhiteSpaces(it);
             std::u16string::const_iterator temp=it;
-            std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> cv;
             size_t depth=0;
             while(temp!=utf16.end()){
+                if(commentStart(temp)){std::advance(temp, 4);skipOverComment(temp);}
                 if((*temp)==u'<'){
                     size_t angleStart=std::distance(utf16.cbegin(), temp);
                     std::u16string::const_iterator forwardSlashIt=temp;
@@ -123,7 +152,7 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) {
                         }
                         ++temp;
                     }
-                    //std::cout<<"angle bracket? "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<std::endl;
+//                    std::cout<<"angle bracket? "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<std::endl;
                 }
                 else ++temp;
             }
@@ -247,7 +276,7 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) {
         return true;
     }
     
-    bool Binder::findSchemaComponents(std::u16string::const_iterator& it, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap){
+    bool Binder::findSchemaComponents(std::u16string& utf16, std::u16string::const_iterator& it, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap){
         if((*it)=='<'){
             size_t angleStart=std::distance(utf16.cbegin(), it);
             size_t angleSpace=0;
@@ -255,7 +284,7 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) {
             ++it;
             std::u16string::const_iterator ittmp =it;
             if(skipToWhiteSpace(ittmp)){
-                angleSpace=std::distance(it, ittmp);
+                angleSpace=std::distance(utf16.cbegin(), ittmp);
                 std::u16string_view sv(&(*it), std::distance(it, ittmp));
                 if(std::u16string::size_type pos;(pos=sv.find(u':'))!=std::u16string::npos){
                     schemaPrefix=std::u16string_view(&(*it), pos);
