@@ -48,8 +48,8 @@ namespace sylvanmats::io::xml{
             iterator& operator=(const iterator& other) noexcept = default;
             iterator& operator=(iterator&& other) noexcept = default;
             
-            bool operator==(const iterator<T>& other){ return this->buffer==other.buffer;};
-            bool operator!=(const iterator<T>& other){ return this->buffer!=other.buffer;};
+            bool operator==(const iterator<I>& other){ return this->buffer==other.buffer;};
+            bool operator!=(const iterator<I>& other){ return this->buffer!=other.buffer;};
             iterator<I>& operator++(){buffer++; return *this;};
             iterator<I>& operator++(int){iterator<I>& old=*this;operator++(); return old;};
             iterator<I>& operator--(){buffer--; return *this;};
@@ -109,7 +109,7 @@ namespace sylvanmats::io::xml{
         
         const iterator<T> cbegin(){ return const_cast<const T&>(iterator<T>(buffer)).begin();};
 
-        const iterator<T> cend(){ return const_cast<const T&>(iterator<T>(buffer+n+1).end());};
+        const iterator<T> cend(){ return const_cast<const T&>(iterator<T>(buffer+n+1)).end();};
         
         T::size_type size(){return n;};
         
