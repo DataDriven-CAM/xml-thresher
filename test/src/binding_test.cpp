@@ -15,6 +15,7 @@
 #include "io/xml/Binder.h"
 
 TEST_SUITE("bindings"){
+    
 TEST_CASE("test graphml schema")
 {
     sylvanmats::io::xml::Binder xmlReaper("../../cifio/schemas/graphml/graphml.xsd", "");

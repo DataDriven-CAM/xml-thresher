@@ -24,6 +24,7 @@
 #include <codecvt>
 #include <cstring>
 #include <cwchar>
+#include <any>
 #include <iomanip>
 #include <sstream>
 #include <memory>
@@ -42,6 +43,7 @@
 #include "fmt/format.h"
 #include "fmt/ranges.h"
 
+#include "io/xml/Path.h"
 
 /*template <>
 struct std::formatter<std::vector<size_t>> : std::formatter<size_t>{
@@ -100,17 +102,9 @@ struct deletable_facet : Facet
     ~deletable_facet() {}
 };
 
+
 namespace sylvanmats::io::xml{
     
-    struct tag_indexer{
-        size_t index=0;
-        size_t angle_start=0;
-        size_t forward_slashA=0;
-        size_t space=0;
-        size_t forward_slashB=0;
-        size_t angle_end=0;
-    };
-
 template<typename T>
 constexpr size_t range2(std::array<T, 2> arg) {
     return arg[1]-arg[0]-1;
@@ -158,6 +152,8 @@ constexpr auto range(T N, T M)
 }
 
 class Binder {
+template<typename T> requires std::same_as<T, std::u16string> &&  std::copy_constructible<T>
+friend class Path;
 protected:
     std::string version="";
     std::string encoding="UTF-8";
@@ -184,6 +180,8 @@ public:
     virtual ~Binder() = default;
     
     void operator()(std::function<void(std::u16string& utf16, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag)> apply);
+    //get
+    void operator()(sylvanmats::io::xml::Path<std::u16string>& xp, std::function<void(std::u16string_view& value)> apply);
     
     std::u16string findAttribute(std::u16string name, size_t start, size_t end);
 

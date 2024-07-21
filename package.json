@@ -7,7 +7,7 @@
   "private": null,
   "dependencies": {
     "mio": "mandreyel/mio",
-    "openssl": "openssl/openssl#OpenSSL_1_1_1w",
+    "openssl": "openssl/openssl#openssl-3.3.1",
     "fmt": "fmtlib/fmt",
     "antlr4": "antlr/antlr4",
     "zlib": "madler/zlib"
@@ -19,6 +19,6 @@
     "lib": "which make && make -j 3 -f Makefile all",
     "fmt": "cd cpp_modules/fmt && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../dist .. && make install",
     "build": "cd test && pwd && mkdir -p build/src && which make && make -j3  -f Makefile all",
-    "test": "cnpm build && cd test && pwd && ./test --test-case='test 4hhb pdb xml' "
+    "test": "cnpm build && cd test && pwd && ./test --test-case='test periodic table' "
   }
 }

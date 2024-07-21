@@ -85,6 +85,17 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
         apply(utf16, dag);
     }
     
+    void Binder::operator()(sylvanmats::io::xml::Path<std::u16string>& xp, std::function<void(std::u16string_view& value)> apply){
+            bool hit=xp.match(*this, [](sylvanmats::io::xml::Mask& mask){
+                std::cout<<"matched "<<std::endl;
+            });
+            /*bool hit=match(xp, true, [&](size_t index, std::u16string_view key, std::any& v){
+                std::u16string_view u16v=std::any_cast<std::u16string_view>(v);
+                apply(u16v);
+                return true;
+            });*/
+    }
+    
     std::u16string Binder::findAttribute(std::u16string name, size_t start, size_t end){
         std::u16string attr=name+u"=\"";
         std::u16string::size_type offset=utf16.substr(start, end-start).find(attr);

@@ -15,6 +15,11 @@
 #include "parsing/XMLLexer.h"
 #include "parsing/XMLParser.h"
 
+#define protected public
+#include "io/xml/Path.cpp"
+#include "io/xml/Path.h"
+#include "io/xml/Binder.h"
+
 constexpr inline auto string_hash(const char *s) {
     unsigned long long hash{}, c{};
     for (auto p = s; *p; ++p, ++c) {
@@ -25,6 +30,26 @@ constexpr inline auto string_hash(const char *s) {
  
 constexpr inline auto operator"" _sh(const char *s, size_t) {
     return string_hash(s);
+}
+
+TEST_SUITE("tests"){
+    
+TEST_CASE("test periodic table") {
+    try{
+        sylvanmats::io::xml::Binder xmlThresher("/home/roger/NetBeansProjects/OOBackbone/data/periodic_table.xml", "/home/roger/NetBeansProjects/OOBackbone/schemas/periodic_table.xsd");
+//        CHECK_EQ(xmlThresher.version, std::string("1.0"));
+        CHECK_EQ(xmlThresher.encoding, std::string("UTF-8"));
+//        CHECK_EQ(xmlThresher.schemaPrefix, u"pt");
+        sylvanmats::io::xml::Path<std::u16string>&& path2=u"/pt:elements/pt:element[@symbol='C']"_xp;
+        xmlThresher(path2, [&xmlThresher](std::u16string_view& value){
+            std::cout<<" "<<xmlThresher.utf16conv.to_bytes(std::u16string(value.begin(),value.end()))<<std::endl;
+        });
+        
+    }
+    catch(std::exception& ex){
+    std::cout<<"fail "<<ex.what()<<std::endl;
+        FAIL(ex.what());
+    }
 }
 
 TEST_CASE("test fragment xml"){
@@ -83,4 +108,6 @@ TEST_CASE("test fragment xml"){
                 }
             }
         }
+}
+
 }
