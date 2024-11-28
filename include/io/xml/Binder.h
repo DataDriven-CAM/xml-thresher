@@ -13,13 +13,15 @@
 
 #pragma once
 
-#include <stdlib.h>
+#include <cstdio>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <exception>
 #include <string>
 #include <string_view>
+#include <vector>
+#include <tuple>
 #include <locale>
 #include <codecvt>
 #include <cstring>
@@ -39,9 +41,10 @@
 #include "mio/mmap.hpp"
 #include <algorithm>
 #include <unordered_map>
-#define FMT_HEADER_ONLY
+//#define FMT_HEADER_ONLY
 #include "fmt/format.h"
 #include "fmt/ranges.h"
+#include "graph/container/compressed_graph.hpp"
 
 #include "io/xml/Path.h"
 
@@ -151,6 +154,8 @@ constexpr auto range(T N, T M)
     return result;
 }
 
+    using G = graph::container::compressed_graph<int, tag_indexer>;
+
 class Binder {
 template<typename T> requires std::same_as<T, std::u16string> &&  std::copy_constructible<T>
 friend class Path;
@@ -161,6 +166,10 @@ protected:
     std::u16string utf16;
     std::u16string_view schemaPrefix;
     std::unordered_map<std::u16string, std::u16string_view> schemaComponentMap;
+    G dagGraph;
+    std::vector<tag_indexer> vertices;
+    std::vector<std::tuple<graph::vertex_id_t<G>, graph::vertex_id_t<G>, int>> edges;
+    std::vector<std::vector<size_t>> depthProfile;
     std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>> dag;
     std::vector<int> depthList;
     std::u16string xsdUTF16;
@@ -172,6 +181,7 @@ protected:
 //    constexpr static std::array arr = make_charset_array(std::integral_constant<char16_t, u'a'>{}, std::integral_constant<char16_t, u'z'>{});
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> utf16conv;
     std::locale loc;
+    size_t depth=0;
     
 public:
     Binder() = delete;

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdio>
 #include <string>
 #include <locale>
 #include <codecvt>
@@ -9,6 +10,7 @@
 #include <string_view>
 #include <memory>
 #include <vector>
+#include <tuple>
 #include <map>
 #include <iomanip>
 #include <functional>
@@ -51,6 +53,8 @@ namespace sylvanmats::io::xml{
         size_t space=0;
         size_t forward_slashB=0;
         size_t angle_end=0;
+        size_t depth=0;
+        std::vector<std::pair<std::u16string_view, std::u16string_view>> attributes;
     };
 
     template<typename I>
@@ -319,7 +323,8 @@ namespace sylvanmats::io::xml{
             bool ret=false;
             if(empty())return ret;
             //sylvanmats::XPath31Parser::ExprContext* expr=tree->expr();
-            //std::cout<<"binding.dag size "<<binding.dag[0].second.size()<<std::endl;
+            std::cout<<"binding.dag size "<<binding.dag[0].second.size()<<std::endl;
+
             Mask mask(binding.dag, false);
             node_iterator<size_t> ni(binding.dag);
             if(ni!=ni.end()){

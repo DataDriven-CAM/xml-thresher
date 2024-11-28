@@ -9,7 +9,7 @@ LD=ld.exe
 -include build/src/io/xml/Binder.d
 -include build/src/io/xml/Path.d
 
-all: CXXFLAGS= -DNDEBUG -O3 -pthread -std=c++23  -Iinclude -MMD -Wl,--allow-multiple-definition
+all: CXXFLAGS= -DNDEBUG -O3 -pthread -std=c++26  -Iinclude -MMD -Wl,--allow-multiple-definition
 all: LDFLAGS= -shared  -L`pwd`/cpp_modules/fmt/dist/lib -L`pwd`/cpp_modules/antlr4/runtime/Cpp/run/lib -lfmt -lantlr4-runtime
 ifeq ($(OS),Windows_NT)
 all: LDFLAGS=" -Wl,--export-all-symbols ${LDFLAGS}"
@@ -19,12 +19,12 @@ all: build/src/io/xml/Path.o build/src/io/xml/Binder.o build/src/parsing/XMLLexe
 	#ld --help
 	$(CXX) $(LDFLAGS) -o $(libprefix)xmlthresher.$(ext) $(wildcard build/src/*.o) $(wildcard build/src/parsing/*.o) $(wildcard build/src/io/xpath/*.o) $(wildcard build/src/io/xml/*.o) 
 
-build/src/io/xml/Path.o: CXXFLAGS= -DNDEBUG -O3 -fPIC -pthread -std=c++23 -Iinclude -Isrc -Isrc/parsing -I./cpp_modules/fmt/dist/include -I./cpp_modules/zlib/dist/include -I./cpp_modules/antlr4/runtime/Cpp/run/include/antlr4-runtime -MMD
+build/src/io/xml/Path.o: CXXFLAGS= -DNDEBUG -O3 -fPIC -pthread -std=c++26 -Iinclude -Isrc -Isrc/parsing -I./cpp_modules/fmt/dist/include -I./cpp_modules/graph-v2/include -I./cpp_modules/zlib/dist/include -I./cpp_modules/antlr4/runtime/Cpp/run/include/antlr4-runtime -MMD
 build/src/io/xml/Path.o: src/io/xml/Path.cpp 
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -c -o build/src/io/xml/Path.o src/io/xml/Path.cpp
 	
-build/src/io/xml/Binder.o: CXXFLAGS= -DNDEBUG -O3 -fPIC -pthread -std=c++23 -Iinclude -Isrc -I./cpp_modules/mio/include -I./cpp_modules/fmt/dist/include -I./cpp_modules/zlib/dist/include -I./cpp_modules/antlr4/runtime/Cpp/run/include/antlr4-runtime -MMD -MP
+build/src/io/xml/Binder.o: CXXFLAGS= -DNDEBUG -O3 -fPIC -pthread -std=c++26 -Iinclude -Isrc -I./cpp_modules/mio/include -I./cpp_modules/fmt/dist/include -I./cpp_modules/graph-v2/include -I./cpp_modules/zlib/dist/include -I./cpp_modules/antlr4/runtime/Cpp/run/include/antlr4-runtime -MMD -MP
 build/src/io/xml/Binder.o: src/io/xml/Binder.cpp
 	@mkdir -p $(@D)
 	g++ --version

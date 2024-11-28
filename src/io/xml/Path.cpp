@@ -1,5 +1,11 @@
+#include <cstdio>
 #include <ranges>
 #include <cmath>
+
+//#define FMT_HEADER_ONLY
+#include "fmt/format.h"
+#include "fmt/ranges.h"
+#include "graph/container/compressed_graph.hpp"
 
 #include "io/xml/Path.h"
 

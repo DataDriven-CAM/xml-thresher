@@ -37,19 +37,22 @@ TEST_SUITE("tests"){
 TEST_CASE("test periodic table") {
     try{
         sylvanmats::io::xml::Binder xmlThresher("/home/roger/NetBeansProjects/OOBackbone/data/periodic_table.xml", "/home/roger/NetBeansProjects/OOBackbone/schemas/periodic_table.xsd");
+        std::cout<<"check "<<std::endl;
 //        CHECK_EQ(xmlThresher.version, std::string("1.0"));
         CHECK_EQ(xmlThresher.encoding, std::string("UTF-8"));
 //        CHECK_EQ(xmlThresher.schemaPrefix, u"pt");
+        std::cout<<"make path "<<std::endl;
         sylvanmats::io::xml::Path<std::u16string>&& path2=u"/pt:elements/pt:element[@symbol='C']"_xp;
         xmlThresher(path2, [&xmlThresher](std::u16string_view& value){
             std::cout<<" "<<xmlThresher.utf16conv.to_bytes(std::u16string(value.begin(),value.end()))<<std::endl;
         });
-        
+        std::cout<<"end pt "<<std::endl;
     }
     catch(std::exception& ex){
     std::cout<<"fail "<<ex.what()<<std::endl;
         FAIL(ex.what());
     }
+        std::cout<<"end2 pt "<<std::endl;
 }
 
 TEST_CASE("test fragment xml"){
