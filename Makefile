@@ -6,13 +6,13 @@ ifeq ($(OS),Windows_NT)
 endif
 LD=ld.exe
 
-MODULE_DIRECTORY ?= ./cpp_modules
+MODULE_DIRECTORY ?= ./cpp_modules/
 
 -include build/src/io/xml/Binder.d
 -include build/src/io/xml/Path.d
 
 all: CXXFLAGS= -DNDEBUG -O3 -pthread -std=c++26  -Iinclude -MMD -Wl,--allow-multiple-definition
-all: LDFLAGS= -shared  -L$(MODULE_DIRECTORY)/fmt/dist/lib -L$(MODULE_DIRECTORY)/antlr4/runtime/Cpp/run/lib -lfmt -lantlr4-runtime
+all: LDFLAGS= -shared  -L$(MODULE_DIRECTORY)/antlr4/runtime/Cpp/run/lib -lantlr4-runtime
 ifeq ($(OS),Windows_NT)
 all: LDFLAGS=" -Wl,--export-all-symbols ${LDFLAGS}"
 endif
@@ -47,12 +47,12 @@ build/src/io/xpath/XPath31ParserBase.o: ./src/io/xpath/XPath31ParserBase.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -c -o build/src/io/xpath/XPath31ParserBase.o ./src/io/xpath/XPath31ParserBase.cpp
 
-build/src/parsing/XPath31Lexer.o: CXXFLAGS= -DNDEBUG -O3 -fPIC -pthread -std=c++26 -Iinclude -Isrc -I./src/parsing -I$(MODULE_DIRECTORY)zlib/dist/include -I$(MODULE_DIRECTORY)antlr4/runtime/Cpp/run/include/antlr4-runtime -MMD
+build/src/parsing/XPath31Lexer.o: CXXFLAGS= -DNDEBUG -O3 -fPIC -pthread -std=c++26 -Iinclude -Isrc -I./src/parsing -I$(MODULE_DIRECTORY)zlib/dist/include -I$(MODULE_DIRECTORY)/antlr4/runtime/Cpp/run/include/antlr4-runtime -MMD
 build/src/parsing/XPath31Lexer.o: ./src/parsing/XPath31Lexer.cpp 
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -c -o build/src/parsing/XPath31Lexer.o ./src/parsing/XPath31Lexer.cpp
 
-build/src/parsing/XPath31Parser.o: CXXFLAGS= -DNDEBUG -O3 -fPIC -pthread -std=c++26 -Iinclude -Isrc -Iinclude/io/xpath -I./src/parsing -I$(MODULE_DIRECTORY)zlib/dist/include -I$(MODULE_DIRECTORY)antlr4/runtime/Cpp/run/include/antlr4-runtime -MMD
+build/src/parsing/XPath31Parser.o: CXXFLAGS= -DNDEBUG -O3 -fPIC -pthread -std=c++26 -Iinclude -Isrc -Iinclude/io/xpath -I./src/parsing -I$(MODULE_DIRECTORY)zlib/dist/include -I$(MODULE_DIRECTORY)/antlr4/runtime/Cpp/run/include/antlr4-runtime -MMD
 build/src/parsing/XPath31Parser.o: ./src/parsing/XPath31Parser.cpp 
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -c -o build/src/parsing/XPath31Parser.o ./src/parsing/XPath31Parser.cpp

@@ -12,7 +12,7 @@
  */
 
 #include <cstdio>
-//#define FMT_HEADER_ONLY
+#define FMT_HEADER_ONLY
 #include "fmt/format.h"
 #include "fmt/ranges.h"
 #include "graph/container/compressed_graph.hpp"

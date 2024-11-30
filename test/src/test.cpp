@@ -11,14 +11,14 @@
 #include <numbers>
 #include <ranges>
 
-#include "antlr4-runtime.h"
-#include "parsing/XMLLexer.h"
-#include "parsing/XMLParser.h"
-
 #define protected public
 #include "io/xml/Path.cpp"
 #include "io/xml/Path.h"
 #include "io/xml/Binder.h"
+
+#include "antlr4-runtime.h"
+#include "parsing/XMLLexer.h"
+#include "parsing/XMLParser.h"
 
 constexpr inline auto string_hash(const char *s) {
     unsigned long long hash{}, c{};

@@ -1,5 +1,6 @@
 
 #define DOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
+#include <cstdio>
 #include <doctest/doctest.h>
 #include <iostream>
 #include <string>
@@ -11,15 +12,15 @@
 #include <regex>
 #include <filesystem>
 
-#include "antlr4-runtime.h"
-#include "XPath31ParserBase.h"
-#include "parsing/XPath31Lexer.h"
-#include "parsing/XPath31Parser.h"
-
 #define protected public
 
 #include "io/xml/Path.h"
 #include "io/xml/Binder.h"
+
+#include "antlr4-runtime.h"
+#include "XPath31ParserBase.h"
+#include "parsing/XPath31Lexer.h"
+#include "parsing/XPath31Parser.h"
 
 TEST_SUITE("paths"){
 TEST_CASE("test path as container")

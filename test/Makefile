@@ -2,7 +2,7 @@
 -include build/src/io/xml/Binder.d
 -include build/src/io/xml/Path.d
 
-all: LDFLAGS= -fuse-ld=gold -L../cpp_modules/antlr4/runtime/Cpp/run/lib -L`pwd`/../cpp_modules/fmt/dist/lib -L../ -lfmt -lantlr4-runtime -lxmlthresher -ldl -pthread 
+all: LDFLAGS= -fuse-ld=gold -L../cpp_modules/antlr4/runtime/Cpp/run/lib -L../ -lantlr4-runtime -lxmlthresher -ldl -pthread 
 all: build/src/path_test.o build/src/binding_test.o test
 	$(CXX) $(LDFLAGS) -o test $(wildcard build/src/*.o) 
 
