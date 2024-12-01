@@ -66,7 +66,7 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
     }
                 
             }
-
+            mmapXsd.unmap();
         } catch (std::exception& e) {
             std::cout << e.what() << std::endl;
         }
@@ -80,7 +80,7 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
             utf16 = utf16conv.from_bytes(&(*itg));
             initializeGraph(utf16, depthList, dag, schemaComponentMap);
         }
-        
+        mmapXml.unmap();
     } catch (std::exception& e) {
         std::cout << e.what() << std::endl;
     }
@@ -190,41 +190,45 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                 size_t currentDepth=(*itDag).depth;
                 if((*itDag).forward_slashA==0 && (*itDag).forward_slashB==0){
                     if(currentDepth>0){
-                        size_t parentObjSize=depthProfile[currentDepth-1].back();
+                        //size_t parentObjSize=depthProfile[currentDepth-1].back();
                         bool hit=false;
-                        for(std::vector<size_t>::reverse_iterator it=depthProfile[currentDepth-1].rbegin();!hit && it!=depthProfile[currentDepth-1].rend();it++)
-                            if(parentObjSize>=(*itDag).index)parentObjSize=vertices[(*it)].index;
-                            else hit=true;
-                        if(vertices[parentObjSize].index<(*itDag).index)
-                        edges.push_back(std::make_tuple(vertices[parentObjSize].index, (*itDag).index, 1));
+                        size_t parentObjSize=bisect(currentDepth-1, (*itDag).index, hit);
+                        //for(std::vector<size_t>::reverse_iterator it=depthProfile[currentDepth-1].rbegin();!hit && it!=depthProfile[currentDepth-1].rend();it++)
+                        //    if(parentObjSize>=(*itDag).index)parentObjSize=vertices[(*it)].index;
+                        //    else hit=true;
+                        //if(vertices[parentObjSize].index<(*itDag).index)
+                        if(hit)edges.push_back(std::make_tuple(vertices[parentObjSize].index, (*itDag).index, 1));
                     }
                 }
                 else if((*itDag).forward_slashA==1 && (*itDag).forward_slashB==0){
                     //if(currentDepth==0)std::cout<<"END_OBJ "<<(*itDag).index<<" "<<std::endl;
                     if(currentDepth>=0){
-                        size_t parentObjSize=depthProfile[currentDepth].back();
+                        //size_t parentObjSize=depthProfile[currentDepth].back();
                         bool hit=false;
-                        for(std::vector<size_t>::reverse_iterator it=depthProfile[currentDepth].rbegin();!hit && it!=depthProfile[currentDepth].rend();it++)
-                            if(parentObjSize>=(*itDag).index || vertices[parentObjSize].forward_slashA==0)parentObjSize=vertices[(*it)].index;
-                            else hit=true;
-                        if(vertices[parentObjSize].index<(*itDag).index)
-                        edges.push_back(std::make_tuple(vertices[parentObjSize].index, (*itDag).index, 1));
+                        size_t parentObjSize=bisect(currentDepth, 0, (*itDag).index, hit);
+                        //for(std::vector<size_t>::reverse_iterator it=depthProfile[currentDepth].rbegin();!hit && it!=depthProfile[currentDepth].rend();it++)
+                        //    if(parentObjSize>=(*itDag).index || vertices[parentObjSize].forward_slashA==0)parentObjSize=vertices[(*it)].index;
+                        //    else hit=true;
+                        //if(vertices[parentObjSize].index<(*itDag).index)
+                        if(hit)edges.push_back(std::make_tuple(vertices[parentObjSize].index, (*itDag).index, 1));
                     }
                 }
                 else if((*itDag).forward_slashA==0 && (*itDag).forward_slashB==1){
-                    if(currentDepth>=0){
-                        size_t parentObjSize=depthProfile[currentDepth-1].back();
+                    if(currentDepth>0){
+                        //size_t parentObjSize=depthProfile[currentDepth-1].back();
                         bool hit=false;
-                        size_t offset=((*itDag).forward_slashB==1) ? 1: 0;
-                        for(std::vector<size_t>::reverse_iterator it=depthProfile[currentDepth-offset].rbegin();!hit && it!=depthProfile[currentDepth-offset].rend();it++)
-                        if(parentObjSize>=(*itDag).index)parentObjSize=vertices[(*it)].index;
-                        else hit=true;
+                        size_t parentObjSize=bisect(currentDepth-1, (*itDag).index, hit);
+                        //size_t offset=((*itDag).forward_slashB==1) ? 1: 0;
+                        //for(std::vector<size_t>::reverse_iterator it=depthProfile[currentDepth-offset].rbegin();!hit && it!=depthProfile[currentDepth-offset].rend();it++)
+                        //if(parentObjSize>=(*itDag).index)parentObjSize=vertices[(*it)].index;
+                        //else hit=true;
 //                        std::cout<<"VP "<<hit<<" "<<offset<<" "<<(currentDepth-offset)<<" "<<parentObjSize<<" "<<vertices[parentObjSize].index<<" "<<(*itDag).index<<std::endl;
-                        if(vertices[parentObjSize].index<(*itDag).index)
-                            edges.push_back(std::make_tuple(vertices[parentObjSize].index, (*itDag).index, 1));
+                        //if(vertices[parentObjSize].index<(*itDag).index)
+                        if(hit)edges.push_back(std::make_tuple(vertices[parentObjSize].index, (*itDag).index, 1));
                     }
                 }
             }
+            std::cout<<"sort edges "<<std::endl;
             std::sort(edges.begin(), edges.end(), [](std::tuple<graph::vertex_id_t<G>, graph::vertex_id_t<G>, int>& a, std::tuple<graph::vertex_id_t<G>, graph::vertex_id_t<G>, int>& b){return std::get<0>(a)<std::get<0>(b) || std::get<1>(a)<std::get<1>(b);});
             std::cout<<"{";
             for(std::vector<std::tuple<graph::vertex_id_t<G>, graph::vertex_id_t<G>, int>>::iterator it=edges.begin();it!=edges.end();it++){
@@ -271,12 +275,12 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
             dagGraph.reserve_vertices(vertices.size());
             dagGraph.reserve_edges(edges.size());
             dagGraph.load_edges(edges, [](const value& val) -> edge_desc {
-                    std::cout<<"edge "<<std::get<0>(val)<<" "<<std::get<1>(val)<<" "<<std::get<2>(val)<<std::endl;
+                    //std::cout<<"edge "<<std::get<0>(val)<<" "<<std::get<1>(val)<<" "<<std::get<2>(val)<<std::endl;
                 return edge_desc{std::get<0>(val), std::get<1>(val), std::get<2>(val)};
               }, N);
             dagGraph.load_vertices(vertices, [&](tag_indexer& nm) {
                 auto uid = static_cast<graph::vertex_id_t<G>>(&nm - vertices.data());
-                std::cout<<"uid "<<uid<<std::endl;
+                //std::cout<<"uid "<<uid<<std::endl;
                 return graph::copyable_vertex_t<graph::vertex_id_t<G>, tag_indexer>{uid, nm};
               });
               std::cout<<"bound "<<std::endl;

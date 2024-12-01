@@ -52,15 +52,23 @@ TEST_CASE("test graphml xml")
 {
     sylvanmats::io::xml::Binder xmlReaper("../../cifio/db/oxygen_fragments.graphml", "");
     xmlReaper([](std::u16string& utf16, std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>& dag){});
-    std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
-    std::cout<<xmlReaper.version<<" "<<xmlReaper.encoding<<" "<<cv.to_bytes(std::u16string(xmlReaper.schemaPrefix.begin(), xmlReaper.schemaPrefix.end()))<<std::endl;
+    CHECK_EQ(graph::num_vertices(xmlReaper.dagGraph), 37);
+    CHECK_EQ(graph::vertices(xmlReaper.dagGraph).size(), 37);
+    CHECK_EQ(xmlReaper.vertices.size(), 37);
+    CHECK_EQ(graph::num_edges(xmlReaper.dagGraph), 36);
+    CHECK_EQ(xmlReaper.dag.size(), 36);
+    //std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
+    //std::cout<<xmlReaper.version<<" "<<xmlReaper.encoding<<" "<<cv.to_bytes(std::u16string(xmlReaper.schemaPrefix.begin(), xmlReaper.schemaPrefix.end()))<<std::endl;
     CHECK_EQ(xmlReaper.version, std::string("1.0"));
+    std::cout<<"encoding "<<std::endl;
     CHECK_EQ(xmlReaper.encoding, std::string("UTF-8"));
+    std::cout<<"schemaPrefix "<<std::endl;
     CHECK(xmlReaper.schemaPrefix.empty());
+    std::cout<<"schemaPrefixed "<<std::endl;
     //for(size_t i=0;i<xmlReaper.schemaComponentMap.size();i++)std::cout<<cv.to_bytes(std::u16string(xmlReaper.schemaComponentMap.begin(), xmlReaper.schemaComponentMap.end()))<<std::endl;
-    for( const auto& n : xmlReaper.schemaComponentMap ) {
+    /*for( const auto& n : xmlReaper.schemaComponentMap ) {
         std::cout << "Key:[" << cv.to_bytes(n.first) << "] Value:[" << cv.to_bytes(std::u16string(n.second.begin(), n.second.end())) << "]\n";
-    }
+    }*/
    
 }
 
