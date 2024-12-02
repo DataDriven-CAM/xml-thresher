@@ -32,6 +32,11 @@
 *.app
 /nbproject/
 build
+/documents/*.aux
+/documents/*.log
+/documents/*.out
+/documents/*.pdf
+/documents/*.gz
 src/parsing/
 cpp_modules/
 test/examples/

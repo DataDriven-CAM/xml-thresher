@@ -13,6 +13,7 @@
 #include <codecvt>
 #define protected public
 #include "io/xml/Binder.h"
+#include "io/tikz/GraphPublisher.h"
 
 TEST_SUITE("bindings"){
     
@@ -60,15 +61,18 @@ TEST_CASE("test graphml xml")
     //std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
     //std::cout<<xmlReaper.version<<" "<<xmlReaper.encoding<<" "<<cv.to_bytes(std::u16string(xmlReaper.schemaPrefix.begin(), xmlReaper.schemaPrefix.end()))<<std::endl;
     CHECK_EQ(xmlReaper.version, std::string("1.0"));
-    std::cout<<"encoding "<<std::endl;
     CHECK_EQ(xmlReaper.encoding, std::string("UTF-8"));
-    std::cout<<"schemaPrefix "<<std::endl;
     CHECK(xmlReaper.schemaPrefix.empty());
-    std::cout<<"schemaPrefixed "<<std::endl;
     //for(size_t i=0;i<xmlReaper.schemaComponentMap.size();i++)std::cout<<cv.to_bytes(std::u16string(xmlReaper.schemaComponentMap.begin(), xmlReaper.schemaComponentMap.end()))<<std::endl;
     /*for( const auto& n : xmlReaper.schemaComponentMap ) {
         std::cout << "Key:[" << cv.to_bytes(n.first) << "] Value:[" << cv.to_bytes(std::u16string(n.second.begin(), n.second.end())) << "]\n";
     }*/
+    sylanmats::io::tikz::GraphPublisher graphPublisher;
+    std::string&& tikzDrawing=graphPublisher(xmlReaper);
+    std::filesystem::path filePath="../documents/xml_graph.tex";
+    std::ofstream ofs(filePath);
+    ofs<<tikzDrawing<<std::endl;
+    ofs.close();
    
 }
 

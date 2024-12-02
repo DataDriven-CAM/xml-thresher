@@ -128,12 +128,12 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                 if(commentStart(it)){std::cout<<"skip pro comment "<<cv.to_bytes(utf16.substr(std::distance(utf16.cbegin(), it), 20))<<std::endl;std::advance(it, 4);skipOverComment(it);}
                 else commentsOnly=false;
             }
+            depth=0;
+            for(int di=0;di<depth;di++)depthProfile.push_back(std::vector<size_t>{});
             findSchemaComponents(utf16, it, depthList, dag, schemaComponentMap);
             skipOverWhiteSpaces(it);
             std::u16string::const_iterator temp=it;
-            depth=0;
             size_t dagOffset=(!dag.empty())? dag.size()-1 : 0;
-            for(int di=0;di<depth;di++)depthProfile.push_back(std::vector<size_t>{});
             while(temp!=utf16.end()){
                 if(commentStart(temp)){std::advance(temp, 4);skipOverComment(temp);}
                 if((*temp)==u'<'){
@@ -175,17 +175,18 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                         }
                         ++temp;
                     }
-//                    std::cout<<"angle bracket? "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<" "<<cv.to_bytes(*temp++)<<std::endl;
+//                    std::u16string::const_iterator temper=temp;
+//                    std::cout<<"angle bracket? "<<cv.to_bytes(*temper++)<<" "<<cv.to_bytes(*temper++)<<" "<<cv.to_bytes(*temper++)<<" "<<cv.to_bytes(*temper++)<<" "<<cv.to_bytes(*temper++)<<" "<<cv.to_bytes(*temper++)<<" "<<cv.to_bytes(*temper++)<<" "<<cv.to_bytes(*temper++)<<std::endl;
                 }
                 else ++temp;
             }
-            std::string depthText=fmt::format("{}\n", depthList);
+            /*std::string depthText=fmt::format("{}\n", depthList);
             std::cout<<depthText;
             for(std::vector<std::vector<size_t>>::iterator it=depthProfile.begin();it!=depthProfile.end();it++){
                 std::cout<<(std::distance(depthProfile.begin(), it))<<std::endl;
                 std::string depthProfile=fmt::format("{}\n", (*it));
                 std::cout<<"\t"<<depthProfile;
-            }
+            }*/
             for(std::vector<tag_indexer>::iterator itDag=vertices.begin()+dagOffset;itDag!=vertices.end();itDag++){
                 size_t currentDepth=(*itDag).depth;
                 if((*itDag).forward_slashA==0 && (*itDag).forward_slashB==0){
@@ -228,13 +229,12 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                     }
                 }
             }
-            std::cout<<"sort edges "<<std::endl;
             std::sort(edges.begin(), edges.end(), [](std::tuple<graph::vertex_id_t<G>, graph::vertex_id_t<G>, int>& a, std::tuple<graph::vertex_id_t<G>, graph::vertex_id_t<G>, int>& b){return std::get<0>(a)<std::get<0>(b) || std::get<1>(a)<std::get<1>(b);});
-            std::cout<<"{";
+            /*std::cout<<"{";
             for(std::vector<std::tuple<graph::vertex_id_t<G>, graph::vertex_id_t<G>, int>>::iterator it=edges.begin();it!=edges.end();it++){
                 std::cout<<"{"<<std::get<0>((*it))<<","<<std::get<1>((*it))<<","<<std::get<2>((*it))<<"}, ";
             }
-            std::cout<<"}"<<std::endl;
+            std::cout<<"}"<<std::endl;*/
             depth=0;
             std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>::iterator previousNode=dag.end();
             for(std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>::iterator itDag=dag.begin();itDag!=dag.end();itDag++){
@@ -283,7 +283,6 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                 //std::cout<<"uid "<<uid<<std::endl;
                 return graph::copyable_vertex_t<graph::vertex_id_t<G>, tag_indexer>{uid, nm};
               });
-              std::cout<<"bound "<<std::endl;
     }
     
     bool Binder::findProlog(mio::mmap_source::const_iterator& it){
@@ -425,6 +424,7 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
             depthProfile[depth].push_back(vertices.back().index);
             dag.push_back(std::make_pair(tag_indexer{.index=dag.size(), .angle_start=angleStart, .forward_slashA=forwardSlash, .space=angleSpace, .forward_slashB=forwardSlash2, .angle_end=angleEnd}, std::vector<tag_indexer>{}));
             depthList.push_back(0);
+            depth++;
         }
         ++it;
         return true;

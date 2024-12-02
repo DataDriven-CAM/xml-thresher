@@ -45,7 +45,7 @@ namespace sylvanmats::io::xml{
     inline const std::u16string_view substr_view(const std::u16string& source, size_t offset = 0,
                 std::u16string_view::size_type count = 
                 std::numeric_limits<std::u16string_view::size_type>::max()) {
-    if (offset < source.size()) 
+    if (offset < source.size() && count>offset) 
         return std::u16string_view(source.data() + offset, count - offset);
     return {};
     }
