@@ -33,7 +33,7 @@ TEST_CASE("test path as container")
     sylvanmats::io::xml::Path<std::u16string>&& path2=u"/xsd:schema/xsd:element[@name]"_xp;
     CHECK_EQ(path2.size(), 2);
     for(sylvanmats::io::xml::Path<std::u16string>::iterator it=path2.begin();it!=path2.end();it++){
-        std::cout<<" "<<cv.to_bytes(*it)<<std::endl;
+        //std::cout<<" "<<cv.to_bytes(*it)<<std::endl;
     }
 }
 
@@ -57,7 +57,7 @@ TEST_CASE("test xpath expressions"){
     for (std::sregex_iterator i = std::sregex_iterator(content.begin(), content.end(), lines_regex); i != std::sregex_iterator(); ++i){
         std::smatch match = *i;
         std::string match_str = match.str();
-        std::cout << match_str << '\n';
+        //std::cout << match_str << '\n';
         try{
             sylvanmats::io::xml::Path<std::u16string> path(cv.from_bytes(match_str).c_str());
         }

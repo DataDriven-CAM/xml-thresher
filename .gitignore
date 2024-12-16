@@ -39,4 +39,3 @@ build
 /documents/*.gz
 src/parsing/
 cpp_modules/
-test/examples/

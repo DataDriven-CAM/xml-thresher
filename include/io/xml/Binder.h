@@ -182,6 +182,7 @@ protected:
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> utf16conv;
     std::locale loc;
     size_t depth=0;
+    size_t nDepth=0;
     
 public:
     Binder() = delete;
@@ -221,6 +222,16 @@ private:
         while((*it)!=std::char_traits<char16_t>::eof() && ((*(it))==u' ' || (*(it))==u'\f' || (*(it))==u'\n' || (*(it))==u'\r' || (*(it))==u'\t' || (*(it))==u'\v')){//std::isspace<char16_t>(static_cast<int>(*it), loc)){
             ++it;
         }
+    };
+    inline bool hasWhiteSpaceBeforeEndAngle(std::u16string::const_iterator& it){
+        std::u16string::const_iterator ittmp =it;
+        bool has=true;
+        while(has && (*ittmp)!=std::char_traits<char16_t>::eof() && !((*(ittmp))==u' ' || (*(ittmp))==u'\f' || (*(ittmp))==u'\n' || (*(ittmp))==u'\r' || (*(ittmp))==u'\t' || (*(ittmp))==u'\v')){//!std::isspace<char16_t>(static_cast<int>(*it), loc)){
+            if((*(ittmp))==u'>')has=false;
+            else ++ittmp;
+        }
+        if(!has)it=ittmp;
+        return (*ittmp)!=std::char_traits<char16_t>::eof() && has;
     };
     inline bool skipToWhiteSpace(std::u16string::const_iterator& it){
         while((*it)!=std::char_traits<char16_t>::eof() && !((*(it))==u' ' || (*(it))==u'\f' || (*(it))==u'\n' || (*(it))==u'\r' || (*(it))==u'\t' || (*(it))==u'\v')){//!std::isspace<char16_t>(static_cast<int>(*it), loc)){

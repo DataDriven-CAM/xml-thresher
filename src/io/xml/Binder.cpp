@@ -76,7 +76,7 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
         mio::mmap_source mmapXml(fdXml, 0, mio::map_entire_file);
         mio::mmap_source::const_iterator itg=mmapXml.begin();
         if(!findProlog(itg))itg=mmapXml.begin();
-        else{
+        {
             utf16 = utf16conv.from_bytes(&(*itg));
             initializeGraph(utf16, depthList, dag, schemaComponentMap);
         }
@@ -125,11 +125,11 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
             bool commentsOnly=true;
             while(commentsOnly && it!=utf16.end()){
                 skipOverWhiteSpaces(it);
-                if(commentStart(it)){std::cout<<"skip pro comment "<<cv.to_bytes(utf16.substr(std::distance(utf16.cbegin(), it), 20))<<std::endl;std::advance(it, 4);skipOverComment(it);}
+                if(commentStart(it)){std::advance(it, 4);skipOverComment(it);}
                 else commentsOnly=false;
             }
             depth=0;
-            for(int di=0;di<depth;di++)depthProfile.push_back(std::vector<size_t>{});
+            for(int di=0;di<nDepth;di++)depthProfile.push_back(std::vector<size_t>{});
             findSchemaComponents(utf16, it, depthList, dag, schemaComponentMap);
             skipOverWhiteSpaces(it);
             std::u16string::const_iterator temp=it;
@@ -156,21 +156,28 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                     }
                     if((*temp)==u'>'){
                         size_t angleEnd=std::distance(utf16.cbegin(), temp);
-                        vertices.push_back(tag_indexer{.index=vertices.size(), .angle_start=angleStart, .forward_slashA=forwardSlash, .space=angleSpace, .forward_slashB=forwardSlash2, .angle_end=angleEnd, .depth=depth});
-                        if(depth>=depthProfile.size())depthProfile.push_back(std::vector<size_t>{});
-                        depthProfile[depth].push_back(vertices.back().index);
+                        if(forwardSlash2==0){
+                        vertices.push_back(tag_indexer{.index=vertices.size(), .angle_start=angleStart, .forward_slashA=forwardSlash, .space=angleSpace, .forward_slashB=forwardSlash2, .angle_end=angleEnd, .depth=nDepth});
+                        if(nDepth>=depthProfile.size())depthProfile.push_back(std::vector<size_t>{});
+                        depthProfile[nDepth].push_back(vertices.back().index);
+                        }
                         dag.push_back(std::make_pair(tag_indexer{.index=dag.size(), .angle_start=angleStart, .forward_slashA=forwardSlash, .space=angleSpace, .forward_slashB=forwardSlash2, .angle_end=angleEnd}, std::vector<tag_indexer>{}));
                         if(forwardSlash==1){
+                            //std::cout<<"\t"<<cv.to_bytes(std::u16string(utf16.cbegin()+vertices.back().angle_start, utf16.cbegin()+vertices.back().angle_end+1))<<std::endl;
                             depthList.push_back(depth);
                             if(depth>0)depth--;
+                            if(nDepth>0)nDepth--;
                         }
                         else if(forwardSlash2==1){
                             depth++;
                             depthList.push_back(depth);
                             if(depth>0)depth--;
+                            //if(nDepth>0)nDepth--;
                         }
                         else {
+                            //std::cout<<""<<cv.to_bytes(std::u16string(utf16.cbegin()+vertices.back().angle_start, utf16.cbegin()+vertices.back().angle_end+1))<<std::endl;
                             depth++;
+                            nDepth++;
                             depthList.push_back(depth);
                         }
                         ++temp;
@@ -203,10 +210,10 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                 }
                 else if((*itDag).forward_slashA==1 && (*itDag).forward_slashB==0){
                     //if(currentDepth==0)std::cout<<"END_OBJ "<<(*itDag).index<<" "<<std::endl;
-                    if(currentDepth>=0){
+                    if(currentDepth>0){
                         //size_t parentObjSize=depthProfile[currentDepth].back();
                         bool hit=false;
-                        size_t parentObjSize=bisect(currentDepth, 0, (*itDag).index, hit);
+                        size_t parentObjSize=bisect(currentDepth-1, 0, (*itDag).index, hit);
                         //for(std::vector<size_t>::reverse_iterator it=depthProfile[currentDepth].rbegin();!hit && it!=depthProfile[currentDepth].rend();it++)
                         //    if(parentObjSize>=(*itDag).index || vertices[parentObjSize].forward_slashA==0)parentObjSize=vertices[(*it)].index;
                         //    else hit=true;
@@ -215,10 +222,10 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                     }
                 }
                 else if((*itDag).forward_slashA==0 && (*itDag).forward_slashB==1){
-                    if(currentDepth>0){
+                    if(currentDepth>=0){
                         //size_t parentObjSize=depthProfile[currentDepth-1].back();
                         bool hit=false;
-                        size_t parentObjSize=bisect(currentDepth-1, (*itDag).index, hit);
+                        size_t parentObjSize=bisect(currentDepth, (*itDag).index, hit);
                         //size_t offset=((*itDag).forward_slashB==1) ? 1: 0;
                         //for(std::vector<size_t>::reverse_iterator it=depthProfile[currentDepth-offset].rbegin();!hit && it!=depthProfile[currentDepth-offset].rend();it++)
                         //if(parentObjSize>=(*itDag).index)parentObjSize=vertices[(*it)].index;
@@ -369,11 +376,13 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
     
     bool Binder::findSchemaComponents(std::u16string& utf16, std::u16string::const_iterator& it, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap){
         if((*it)=='<'){
+            std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> cv;
             size_t angleStart=std::distance(utf16.cbegin(), it);
             size_t angleSpace=0;
             size_t angleEnd=0;
             ++it;
             std::u16string::const_iterator ittmp =it;
+            if(hasWhiteSpaceBeforeEndAngle(ittmp)){
             if(skipToWhiteSpace(ittmp)){
                 angleSpace=std::distance(utf16.cbegin(), ittmp);
                 std::u16string_view sv(&(*it), std::distance(it, ittmp));
@@ -417,16 +426,22 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                 }
                 
             }
+            }
+            else {
+                it=ittmp;
+                angleEnd=std::distance(utf16.cbegin(), it);
+            }
             size_t forwardSlash=0;
             size_t forwardSlash2=0;
-            vertices.push_back(tag_indexer{.index=vertices.size(), .angle_start=angleStart, .forward_slashA=forwardSlash, .space=angleSpace, .forward_slashB=forwardSlash2, .angle_end=angleEnd, .depth=depth});
-            if(depth>=depthProfile.size())depthProfile.push_back(std::vector<size_t>{});
-            depthProfile[depth].push_back(vertices.back().index);
+            vertices.push_back(tag_indexer{.index=vertices.size(), .angle_start=angleStart, .forward_slashA=forwardSlash, .space=angleSpace, .forward_slashB=forwardSlash2, .angle_end=angleEnd, .depth=nDepth});
+            if(nDepth>=depthProfile.size())depthProfile.push_back(std::vector<size_t>{});
+            depthProfile[nDepth].push_back(vertices.back().index);
             dag.push_back(std::make_pair(tag_indexer{.index=dag.size(), .angle_start=angleStart, .forward_slashA=forwardSlash, .space=angleSpace, .forward_slashB=forwardSlash2, .angle_end=angleEnd}, std::vector<tag_indexer>{}));
             depthList.push_back(0);
             depth++;
-        }
-        ++it;
+            nDepth++;
+       }
+         ++it;
         return true;
     }
 

@@ -20,6 +20,6 @@
     "lib": "which make && make -j 3 -f Makefile all",
     "fmt": "cd cpp_modules/fmt && mkdir -p build && cd build && ccmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX=../dist .. && make install",
     "build": "cd test && pwd && mkdir -p build/src && which make && make -j3  -f Makefile all",
-    "test": "cnpm build && cd test && pwd && ./test --test-case='test graphml xml'"
+    "test": "cnpm build && cd test && pwd && ./test "
   }
 }

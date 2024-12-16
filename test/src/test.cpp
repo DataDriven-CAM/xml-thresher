@@ -44,15 +44,14 @@ TEST_CASE("test periodic table") {
         std::cout<<"make path "<<std::endl;
         sylvanmats::io::xml::Path<std::u16string>&& path2=u"/pt:elements/pt:element[@symbol='C']"_xp;
         xmlThresher(path2, [&xmlThresher](std::u16string_view& value){
-            std::cout<<" "<<xmlThresher.utf16conv.to_bytes(std::u16string(value.begin(),value.end()))<<std::endl;
+            //std::cout<<" "<<xmlThresher.utf16conv.to_bytes(std::u16string(value.begin(),value.end()))<<std::endl;
         });
-        std::cout<<"end pt "<<std::endl;
+        //std::cout<<"end pt "<<std::endl;
     }
     catch(std::exception& ex){
-    std::cout<<"fail "<<ex.what()<<std::endl;
+    //std::cout<<"fail "<<ex.what()<<std::endl;
         FAIL(ex.what());
     }
-        std::cout<<"end2 pt "<<std::endl;
 }
 
 TEST_CASE("test fragment xml"){
@@ -80,7 +79,7 @@ TEST_CASE("test fragment xml"){
                         std::string id;
                         for(sylvanmats::XMLParser::AttributeContext* a : node->attribute()){
 
-                            std::cout<<"\t"<<a->Name()->getText()<<" "<<a->STRING()->getText()<<std::endl;
+                            //std::cout<<"\t"<<a->Name()->getText()<<" "<<a->STRING()->getText()<<std::endl;
                             switch(string_hash(a->Name()->getText().c_str())){
                                 case "id"_sh:
                                     id=a->STRING()->getText();
@@ -92,20 +91,20 @@ TEST_CASE("test fragment xml"){
                             std::string name;
                             for(sylvanmats::XMLParser::AttributeContext* a : data->attribute()){
 
-                                std::cout<<"\t"<<a->Name()->getText()<<" "<<a->STRING()->getText()<<std::endl;
+                                //std::cout<<"\t"<<a->Name()->getText()<<" "<<a->STRING()->getText()<<std::endl;
                                 switch(string_hash(a->Name()->getText().c_str())){
                                     case "key"_sh:
                                         name=a->STRING()->getText();
                                     break;
                                 }
                             }
-                            if(data->content()!=nullptr)std::cout<<data->content()->chardata(0)->TEXT()->getText()<<std::endl;
+                            //if(data->content()!=nullptr)std::cout<<data->content()->chardata(0)->TEXT()->getText()<<std::endl;
                         }
                     }
                     for(sylvanmats::XMLParser::ElementContext* e : ei | std::views::filter([&r](sylvanmats::XMLParser::ElementContext* di){ return !r->Name().empty() && r->Name(0)->getText().compare("graph")==0 && di->Name(0)->getText().compare("edge")==0; })){
                         for(sylvanmats::XMLParser::AttributeContext* a : e->attribute()){
 
-                            std::cout<<"\t"<<a->Name()->getText()<<" "<<a->STRING()->getText()<<std::endl;
+                            //std::cout<<"\t"<<a->Name()->getText()<<" "<<a->STRING()->getText()<<std::endl;
                         }
                     }
                 }

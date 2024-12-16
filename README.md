@@ -17,6 +17,11 @@ cnpm lib
 cnpm test
 
 ```
+
+Coming:
+* matching an 3.1 XPath to a dag branch
+
+
 ## Contact
 
 My twitch stream is https://www.twitch.tv/sylvanmats

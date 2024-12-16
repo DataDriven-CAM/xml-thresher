@@ -259,7 +259,7 @@ namespace sylvanmats::io::xml{
             for(std::vector<sylvanmats::XPath31Parser::ExprsingleContext *>::iterator it=es.begin();it!=es.end();it++){
                 //std::cout<<"\tes "<<(*it)->getText()<<" "<<((*it)->forexpr())<<" "<<((*it)->letexpr())<<" "<<((*it)->quantifiedexpr())<<" "<<((*it)->ifexpr())<<" "<<((*it)->orexpr())<<std::endl;
                 if((*it)->quantifiedexpr()!=nullptr){
-                    std::cout<<"\nvarname size "<<(*it)->quantifiedexpr()->varname().size()<<std::endl;
+                    //std::cout<<"\nvarname size "<<(*it)->quantifiedexpr()->varname().size()<<std::endl;
                 }
                 if((*it)->orexpr()!=nullptr){
                     std::vector<sylvanmats::XPath31Parser::AndexprContext *> ac=(*it)->orexpr()->andexpr();
@@ -328,7 +328,7 @@ namespace sylvanmats::io::xml{
             bool ret=false;
             if(empty())return ret;
             //sylvanmats::XPath31Parser::ExprContext* expr=tree->expr();
-            std::cout<<"binding.dag size "<<binding.dag[0].second.size()<<std::endl;
+            //std::cout<<"binding.dag size "<<binding.dag[0].second.size()<<std::endl;
 
             Mask mask(binding.dag, false);
             node_iterator<size_t> ni(binding.dag);
@@ -354,7 +354,7 @@ namespace sylvanmats::io::xml{
                             T rep(text.begin(), text.end());
                             auto[ret2, retExpr]=expressPath(binding, (*oej), text, expr, pIndex);
                             if(ret2){
-                                std::cout<<(*oej)<<" list j "<<cv.to_bytes(rep)<<" "<<cv.to_bytes((*this)[pIndex])<<" "<<(text.compare((*this)[pIndex])==0)<<std::endl;
+                                //std::cout<<(*oej)<<" list j "<<cv.to_bytes(rep)<<" "<<cv.to_bytes((*this)[pIndex])<<" "<<(text.compare((*this)[pIndex])==0)<<std::endl;
                                 mask.enable((*oej));
                                 ret=true;
                             }
@@ -377,7 +377,7 @@ namespace sylvanmats::io::xml{
                 //std::cout<<"\tes "<<(*it)->getText()<<" "<<((*it)->forexpr())<<" "<<((*it)->letexpr())<<" "<<((*it)->quantifiedexpr())<<" "<<((*it)->ifexpr())<<" "<<((*it)->orexpr())<<std::endl;
                 if(antlrcpp::is<sylvanmats::XPath31Parser::QuantifiedexprContext*>((*it)->quantifiedexpr())){
                     sylvanmats::XPath31Parser::QuantifiedexprContext* qc=(*it)->quantifiedexpr();
-                    std::cout<<"\nvarname size "<<qc->varname().size()<<std::endl;
+                    //std::cout<<"\nvarname size "<<qc->varname().size()<<std::endl;
                 }
                 if(antlrcpp::is<sylvanmats::XPath31Parser::OrexprContext*>((*it)->orexpr())){
                     sylvanmats::XPath31Parser::OrexprContext* oc=(*it)->orexpr();
@@ -423,7 +423,7 @@ namespace sylvanmats::io::xml{
                                                             sylvanmats::XPath31Parser::NodetestContext* ntc=dynamic_cast<sylvanmats::XPath31Parser::NodetestContext*>(afsc->nodetest());
                                                             if(antlrcpp::is<sylvanmats::XPath31Parser::NametestContext*>(ntc->nametest())){
                                                               sylvanmats::XPath31Parser::NametestContext* nametc=dynamic_cast<sylvanmats::XPath31Parser::NametestContext*>(ntc->nametest());
-                                                                if(antlrcpp::is<sylvanmats::XPath31Parser::WildcardContext*>(nametc->wildcard()))std::cout<<"wildcard "<<std::endl;
+                                                                //if(antlrcpp::is<sylvanmats::XPath31Parser::WildcardContext*>(nametc->wildcard()))std::cout<<"wildcard "<<std::endl;
                                                                 if(antlrcpp::is<sylvanmats::XPath31Parser::WildcardContext*>(nametc->wildcard()))ret=true;
                                                                 if(antlrcpp::is<sylvanmats::XPath31Parser::EqnameContext*>(nametc->eqname())){
                                                                 sylvanmats::XPath31Parser::EqnameContext* enc=dynamic_cast<sylvanmats::XPath31Parser::EqnameContext*>(nametc->eqname());
