@@ -62,92 +62,6 @@ namespace sylvanmats::io::xml{
         std::vector<std::pair<std::u16string_view, std::u16string_view>> attributes;
     };
 
-    template<typename I>
-    struct Node{
-        public:
-        Node(I index) : index (index) {};
-        mutable I index;
-        I& operator*() {return (index);};
-        I* operator->() { return &index; };
-    };
-    template<typename I>
-    struct Edge{
-        Edge(I source, I target) : source (source), target (target) {};
-        mutable I source;
-        mutable I target;
-    };
-
-    struct Mask{
-        std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag;
-        bool defaultStatus;
-        std::unordered_map<size_t, bool> statusMap;
-        Mask(std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, bool defaultStatus=true): dag (dag), defaultStatus (defaultStatus) {
-            
-        };
-        void enable(size_t id){ if(statusMap.count(id)==0)statusMap.insert(std::make_pair(id, true));};
-        void disable(size_t id){ if(statusMap.count(id)==0)statusMap.insert(std::make_pair(id, false));};
-        bool status(size_t id){ if(statusMap.count(id)==0) return defaultStatus; else return statusMap[id];};
-    };
-    
-        template<typename I> requires std::same_as<I, size_t>// && std::input_or_output_iterator<I>
-        struct node_iterator : public Node<I> {
-            using Node<I>::index;
-            std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>> dag;
-//            template<typename D>
-//            using iter_difference_t = typename std::conditional_t<is_iterator_primary<D>, std::incrementable_traits<D>, iterator_traits<D>>::difference_type;
-            node_iterator() = default;
-            node_iterator(I index): Node<I> (index) {};
-            node_iterator(std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag): dag (dag), Node<I> (0) {};
-            node_iterator(const node_iterator<I>& orig) = default;
-            node_iterator(node_iterator<I>&& other) = default;
-            virtual ~node_iterator() = default;
-            node_iterator& operator=(const node_iterator& other) noexcept = default;
-            node_iterator& operator=(node_iterator&& other) noexcept = default;
-            node_iterator<I> end(){return node_iterator<I> (this->dag.size());};
-            
-            bool operator==(const node_iterator<I>& other){ return this->index==other.index;};
-            bool operator!=(const node_iterator<I>& other){ return this->index!=other.index;};
-            node_iterator<I>& operator++(){index++; return *this;};
-//            node_iterator<I>& operator--(){index--; return *this;};
-            I& operator*() {return (index);};
-            I* operator->() { return &index; };
-            
-        };
-        //friend bool operator==(const node_iterator<size_t>& orig, const node_iterator<size_t>& other){ return orig.index==other.index;};
-        //friend bool operator!=(const node_iterator<size_t>& orig, const node_iterator<size_t>& other){ return orig.index!=other.index;};
-
-        template<typename I> requires std::same_as<I, size_t>// && std::input_or_output_iterator<I>
-        struct out_edge_iterator : public Edge<I> {
-            using Edge<I>::source;
-            using Edge<I>::target;
-            std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag;
-            I internal_index;
-            I end_index;
-            
-//            template<typename D>
-//            using iter_difference_t = typename std::conditional_t<is_iterator_primary<D>, std::incrementable_traits<D>, iterator_traits<D>>::difference_type;
-            out_edge_iterator() = delete;
-            //out_edge_iterator(I source): Edge<I> (source, 1) {};
-            out_edge_iterator(std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, I source, I target, I internal_index=0): dag (dag), Edge<I> (source, target), internal_index(internal_index) {};
-            out_edge_iterator(std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, Node<I>& n):  internal_index((*n)>0 ? 1 : 0), Edge<I> (*n, dag[dag[*n].second.size()>internal_index ? dag[*n].second[internal_index].index : 0ul].first.index), dag (dag), end_index (dag[*n].second.size()) {};
-            out_edge_iterator(const out_edge_iterator<I>& orig) = delete;
-            out_edge_iterator(out_edge_iterator<I>&& other) = default;
-            virtual ~out_edge_iterator() = default;
-            out_edge_iterator& operator=(const out_edge_iterator& other) noexcept = default;
-            out_edge_iterator& operator=(out_edge_iterator&& other) noexcept = default;
-            
-            bool operator==(const out_edge_iterator<I>& other){ return this->internal_index==other.internal_index;};
-            bool operator!=(const out_edge_iterator<I>& other){ return this->internal_index!=other.internal_index;};
-            out_edge_iterator<I>& operator++(){if(internal_index<dag[source].second.size())target=dag[source].second[internal_index].index; internal_index++; return *this;};
-//            out_edge_iterator<I>& operator--(){index--; return *this;};
-            I& operator*() {return (this->target);};
-            I* operator->() { return &this->target; };
-            out_edge_iterator<I> end(){return std::move(out_edge_iterator<I>(this->dag, this->source, this->target, this->end_index));};
-            
-        };
-        //friend bool operator==(const out_edge_iterator<size_t>& orig, const out_edge_iterator<size_t>& other){ return orig.internal_index==other.internal_index;};
-        //friend bool operator!=(const out_edge_iterato r<size_t>& orig, const out_edge_iterator<size_t>& other){ return orig.internal_index!=other.internal_index;};
-
             template <typename T>
             struct iterator_traits {
                 using __secret_am_i_the_primary_alias = iterator_traits;
@@ -213,7 +127,12 @@ namespace sylvanmats::io::xml{
             T pathRespresentation(c);
             constexpr std::u16string_view delim{u"/"};
             std::ranges::split_view splitting(pathRespresentation, delim);
-            reserveSize=std::distance(splitting.cbegin(), splitting.cend());
+            //reserveSize=std::distance(splitting.cbegin(), splitting.cend());
+            //std::cout<<"word "<<reserveSize<<std::endl;
+            for (const auto wordRange : splitting){
+                if(!wordRange.empty())reserveSize++;
+                //std::cout<<"word "<<cv.to_bytes(std::u16string(wordRange.begin(), wordRange.end()))<<std::endl;
+            }
             reserve(reserveSize);
             /*for (const auto wordRange : splitting){
                 T word(wordRange.begin(), wordRange.end());
@@ -323,51 +242,6 @@ namespace sylvanmats::io::xml{
             }*/
 
         };
-        
-        bool match(sylvanmats::io::xml::Binder& binding, std::function<void(Mask& mask)> apply){
-            bool ret=false;
-            if(empty())return ret;
-            //sylvanmats::XPath31Parser::ExprContext* expr=tree->expr();
-            //std::cout<<"binding.dag size "<<binding.dag[0].second.size()<<std::endl;
-
-            Mask mask(binding.dag, false);
-            node_iterator<size_t> ni(binding.dag);
-            if(ni!=ni.end()){
-                for(out_edge_iterator<size_t> oei(binding.dag, ni); oei!=oei.end(); ++oei){
-                    std::u16string_view text=substr_view(binding.utf16,  binding.dag[(*oei)].first.angle_start+1,  binding.dag[(*oei)].first.angle_end);
-                    T rep(text.begin(), text.end());
-                    auto[ret2, retExpr]=expressPath(binding, (*oei), text, expr);
-                        if(ret2){
-                        //std::cout<<(*oei)<<" list ? "<<cv.to_bytes(rep)<<" "<<cv.to_bytes((*this)[0])<<" "<<(text.compare((*this)[0])==0)<<std::endl;
-                        mask.enable((*ni));
-                        mask.enable((*oei));
-                        ret=true;
-                    }
-                }
-                size_t pIndex=1;
-                sylvanmats::XPath31Parser::ExprContext* currentExpr=nullptr;
-                for(out_edge_iterator<size_t> oei(binding.dag, ni); oei!=oei.end(); ++oei){
-                    if(mask.status((*oei))){
-                    node_iterator<size_t> ni2((*oei));
-                        for(out_edge_iterator<size_t> oej(binding.dag, ni2); oej!=oej.end(); ++oej){
-                            std::u16string_view text=substr_view(binding.utf16,  binding.dag[(*oej)].first.angle_start+1,  binding.dag[(*oej)].first.angle_end);
-                            T rep(text.begin(), text.end());
-                            auto[ret2, retExpr]=expressPath(binding, (*oej), text, expr, pIndex);
-                            if(ret2){
-                                //std::cout<<(*oej)<<" list j "<<cv.to_bytes(rep)<<" "<<cv.to_bytes((*this)[pIndex])<<" "<<(text.compare((*this)[pIndex])==0)<<std::endl;
-                                mask.enable((*oej));
-                                ret=true;
-                            }
-                        }
-                    }
-                }
-            }
-            /*for(std::vector<std::vector<size_t>>::iterator it=navigation.begin();!ret && it!=navigation.end();it++){
-                if((*it).size()==size())ret=true;
-            }*/
-            if(ret)apply(mask);
-            return ret;
-        };
 
         std::tuple<bool, sylvanmats::XPath31Parser::ExprContext*> expressPath(sylvanmats::io::xml::Binder& binding, size_t index, std::u16string_view& text, sylvanmats::XPath31Parser::ExprContext* expr, size_t depth=0){
             std::vector<sylvanmats::XPath31Parser::ExprsingleContext *> es=expr->exprsingle();
@@ -455,7 +329,7 @@ namespace sylvanmats::io::xml{
                                                             currentValue=u"";
                                                             expressPath(binding, index, text, currentExpr, depth+1);
                                                             if(!currentAttribute.empty()){
-                                                            std::u16string value=binding.findAttribute(currentAttribute, binding.dag[index].first.angle_start+1,  binding.dag[index].first.angle_end);
+                                                            std::u16string value=binding.findAttribute(currentAttribute, binding.vertices[index].angle_start+1,  binding.vertices[index].angle_end);
                                                             if(!value.empty()){
                                                             ret=false;
                                                             //if(currentValue.compare(value)==0)std::cout<<"\t"<<cv.to_bytes(currentAttribute)<<" "<<cv.to_bytes(currentValue)<<" "<<cv.to_bytes(value)<<"|"<<std::endl;

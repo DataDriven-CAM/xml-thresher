@@ -12,6 +12,7 @@
 #include <locale>
 #include <codecvt>
 #define protected public
+#include "io/xml/Path.h"
 #include "io/xml/Binder.h"
 #include "io/tikz/GraphPublisher.h"
 
@@ -19,7 +20,7 @@ TEST_SUITE("bindings"){
 
 TEST_CASE("test note.xml"){
     sylvanmats::io::xml::Binder xmlReaper("./examples/note.xml", "");
-    xmlReaper([](std::u16string& utf16, std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>& dag){});
+    xmlReaper([](std::u16string& utf16, sylvanmats::io::xml::G& dagGraph){});
     CHECK_EQ(xmlReaper.version, std::string(""));
     CHECK_EQ(xmlReaper.encoding, std::string("UTF-8"));
     CHECK(xmlReaper.schemaPrefix.empty());
@@ -27,13 +28,19 @@ TEST_CASE("test note.xml"){
     CHECK_EQ(graph::vertices(xmlReaper.dagGraph).size(), 10);
     CHECK_EQ(xmlReaper.vertices.size(), 10);
     CHECK_EQ(graph::num_edges(xmlReaper.dagGraph), 9);
-    CHECK_EQ(xmlReaper.dag.size(), 10);
+    sylvanmats::io::xml::Path<std::u16string> path(u"/note/body");
+    std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
+    xmlReaper(path, [&cv](std::u16string_view& value){
+        //std::cout<<" "<<cv.to_bytes(std::u16string(value.begin(), value.end()))<<std::endl;
+        CHECK_EQ(value, u"My yoke is easy and my burden is light.");
+    });
+    
 }
 
 TEST_CASE("test graphml schema")
 {
     sylvanmats::io::xml::Binder xmlReaper("../../cifio/schemas/graphml/graphml.xsd", "");
-    xmlReaper([](std::u16string& utf16, std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>& dag){});
+    xmlReaper([](std::u16string& utf16, sylvanmats::io::xml::G& dagGraph){});
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
     std::cout<<xmlReaper.version<<" "<<xmlReaper.encoding<<" "<<cv.to_bytes(std::u16string(xmlReaper.schemaPrefix.begin(), xmlReaper.schemaPrefix.end()))<<std::endl;
     CHECK_EQ(xmlReaper.version, std::string("1.0"));
@@ -49,7 +56,7 @@ TEST_CASE("test graphml schema")
 TEST_CASE("test graphml schema angle bracket hunt")
 {
     sylvanmats::io::xml::Binder xmlReaper("../../cifio/schemas/graphml/graphml.xsd", "");
-    xmlReaper([](std::u16string& utf16, std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>& dag){});
+    xmlReaper([](std::u16string& utf16, sylvanmats::io::xml::G& dagGraph){});
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
     std::cout<<xmlReaper.version<<" "<<xmlReaper.encoding<<" "<<cv.to_bytes(std::u16string(xmlReaper.schemaPrefix.begin(), xmlReaper.schemaPrefix.end()))<<std::endl;
     CHECK_EQ(xmlReaper.version, std::string("1.0"));
@@ -65,12 +72,11 @@ TEST_CASE("test graphml schema angle bracket hunt")
 TEST_CASE("test graphml xml")
 {
     sylvanmats::io::xml::Binder xmlReaper("../../cifio/db/oxygen_fragments.graphml", "");
-    xmlReaper([](std::u16string& utf16, std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>& dag){});
+    xmlReaper([](std::u16string& utf16, sylvanmats::io::xml::G& dagGraph){});
     CHECK_EQ(graph::num_vertices(xmlReaper.dagGraph), 36);
     CHECK_EQ(graph::vertices(xmlReaper.dagGraph).size(), 36);
     CHECK_EQ(xmlReaper.vertices.size(), 36);
     CHECK_EQ(graph::num_edges(xmlReaper.dagGraph), 35);
-    CHECK_EQ(xmlReaper.dag.size(), 37);
     //std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
     //std::cout<<xmlReaper.version<<" "<<xmlReaper.encoding<<" "<<cv.to_bytes(std::u16string(xmlReaper.schemaPrefix.begin(), xmlReaper.schemaPrefix.end()))<<std::endl;
     CHECK_EQ(xmlReaper.version, std::string("1.0"));
@@ -93,7 +99,7 @@ TEST_CASE("test 4hhb pdb xml")
 {
         auto start = std::chrono::high_resolution_clock::now();
      sylvanmats::io::xml::Binder xmlReaper("/home/roger/Downloads/4hhb.xml", "/home/roger/Downloads/pdbx-v50.xsd");
-    xmlReaper([](std::u16string& utf16, std::vector<std::pair<sylvanmats::io::xml::tag_indexer, std::vector<sylvanmats::io::xml::tag_indexer>>>& dag){});
+    xmlReaper([](std::u16string& utf16, sylvanmats::io::xml::G& dagGraph){});
         auto end = std::chrono::high_resolution_clock::now();
         std::cout << "4hhb time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count()*1.0e-9 << "s\n";
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;

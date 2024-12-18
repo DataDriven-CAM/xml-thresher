@@ -170,19 +170,18 @@ protected:
     std::vector<tag_indexer> vertices;
     std::vector<std::tuple<graph::vertex_id_t<G>, graph::vertex_id_t<G>, int>> edges;
     std::vector<std::vector<size_t>> depthProfile;
-    std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>> dag;
-    std::vector<int> depthList;
     std::u16string xsdUTF16;
     std::u16string_view xsdSchemaPrefix;
     std::unordered_map<std::u16string, std::u16string_view> xsdSchemaComponentMap;
-    std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>> xsdDAG;
-    std::vector<int> xsdDepthList;
+    G xsdDAGGraph;
+    std::vector<tag_indexer> xsdVertices;
+    std::vector<std::tuple<graph::vertex_id_t<G>, graph::vertex_id_t<G>, int>> xsdEdges;
+    std::vector<std::vector<size_t>> xsdDepthProfile;
 //    constexpr static std::array arr = make_charset_array<char16_t>(range(u'a', u'z'), range(u'_', u'_'), range(u'A', u'Z'));
 //    constexpr static std::array arr = make_charset_array(std::integral_constant<char16_t, u'a'>{}, std::integral_constant<char16_t, u'z'>{});
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> utf16conv;
     std::locale loc;
     size_t depth=0;
-    size_t nDepth=0;
     
 public:
     Binder() = delete;
@@ -190,16 +189,16 @@ public:
     Binder(const Binder& orig) = delete;
     virtual ~Binder() = default;
     
-    void operator()(std::function<void(std::u16string& utf16, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag)> apply);
+    void operator()(std::function<void(std::u16string& utf16, G& dagGraph)> apply);
     //get
     void operator()(sylvanmats::io::xml::Path<std::u16string>& xp, std::function<void(std::u16string_view& value)> apply);
     
     std::u16string findAttribute(std::u16string name, size_t start, size_t end);
 
 private:
-    void initializeGraph(std::u16string& utf16, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap);
+    void initializeGraph(std::u16string& utf16, std::vector<std::vector<size_t>>& depthProfile, G& dagGraph, std::vector<tag_indexer>& vertices, std::vector<std::tuple<graph::vertex_id_t<G>, graph::vertex_id_t<G>, int>>& edges, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap);
     bool findProlog(mio::mmap_source::const_iterator& it);
-    bool findSchemaComponents(std::u16string& utf16, std::u16string::const_iterator& it, std::vector<int>& depthList, std::vector<std::pair<tag_indexer, std::vector<tag_indexer>>>& dag, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap);
+    bool findSchemaComponents(std::u16string& utf16, std::u16string::const_iterator& it, std::vector<std::vector<size_t>>& depthProfile, G& dagGraph, std::unordered_map<std::u16string, std::u16string_view>& schemaComponentMap);
     inline void skipOverWhiteSpaces(mio::mmap_source::const_iterator& it){
         while((*it)!=std::char_traits<char>::eof() && std::isspace((*it))){
             ++it;
@@ -310,6 +309,7 @@ private:
         return high >= 0 ? depthVector[high] : 0; 
     };
 
+    bool match(sylvanmats::io::xml::Path<std::u16string>& xp, bool last, std::function<bool(size_t index, std::u16string_view key, std::any& v)> apply);
 };
 
 }
