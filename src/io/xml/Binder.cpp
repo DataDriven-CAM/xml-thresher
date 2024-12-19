@@ -12,9 +12,7 @@
  */
 
 #include <cstdio>
-#define FMT_HEADER_ONLY
-#include "fmt/format.h"
-#include "fmt/ranges.h"
+#include <ranges>
 #include "graph/container/compressed_graph.hpp"
 #include "graph/views/depth_first_search.hpp"
 
@@ -53,9 +51,9 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                                  [&](auto& u) { return graph::vertex_value(xsdDAGGraph, u).index == 0; });
         graph::vertex_id_t<G> vid=static_cast<graph::vertex_id_t<G>>(it - begin(graph::vertices(xsdDAGGraph)));
         std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> cv;
-        auto& v=dagGraph[vid];
+        auto& v=xsdDAGGraph[vid];
         for (auto&& oe : graph::edges(xsdDAGGraph, v)) {
-            auto oid=graph::target_id(dagGraph, oe);
+            auto oid=graph::target_id(xsdDAGGraph, oe);
             std::cout<<"index "<<vertices[oid].index<<" "<<cv.to_bytes(std::u16string(xsdUTF16.cbegin()+vertices[oid].angle_start+1, xsdUTF16.cbegin()+vertices[oid].angle_end))<<std::endl;
             
         }

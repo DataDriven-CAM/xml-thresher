@@ -15,9 +15,6 @@
 #include <iomanip>
 #include <functional>
 
-#define FMT_HEADER_ONLY
-#include "fmt/format.h"
-#include "fmt/ranges.h"
 #include "graph/container/compressed_graph.hpp"
 
 #include "antlr4-runtime.h"

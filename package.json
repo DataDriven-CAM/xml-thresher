@@ -7,14 +7,14 @@
   "private": null,
   "dependencies": {
     "mio": "mandreyel/mio",
-    "openssl": "openssl/openssl#openssl-3.3.1",
-    "fmt": "fmtlib/fmt",
+    "openssl": "openssl/openssl#openssl-3.3.1"
     "graph-v2": "stdgraph/graph-v2",
     "antlr4": "antlr/antlr4",
     "zlib": "madler/zlib"
   },
   "devDependencies": {
-    "doctest": "onqtam/doctest"
+    "doctest": "onqtam/doctest",
+    "fmt": "fmtlib/fmt"
   },
   "scripts": {
     "lib": "which make && make -j 3 -f Makefile all",
