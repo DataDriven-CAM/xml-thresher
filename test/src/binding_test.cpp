@@ -12,9 +12,10 @@
 #include <locale>
 #include <codecvt>
 #define protected public
+#include "io/tikz/GraphPublisher.h"
+
 #include "io/xml/Path.h"
 #include "io/xml/Binder.h"
-#include "io/tikz/GraphPublisher.h"
 
 TEST_SUITE("bindings"){
 
