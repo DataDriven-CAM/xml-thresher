@@ -399,6 +399,14 @@ namespace sylvanmats::io::xml{
         T::size_type max_size(){return std::allocator_traits<std::allocator<T>>::max_size;};
         
         bool empty(){return n==0;};
+
+        friend std::ostream& operator<<(std::ostream& s, Path& xp) {
+            std::wstring_convert<word_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
+            for(sylvanmats::io::xml::Path<std::u16string>::iterator it=xp.begin();it!=xp.end();it++){
+                s <<"/"<< cv.to_bytes(*it);
+            }
+          return s;
+        }
     };
     
 }

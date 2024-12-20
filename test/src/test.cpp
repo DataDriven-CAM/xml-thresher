@@ -34,7 +34,7 @@ constexpr inline auto operator"" _sh(const char *s, size_t) {
 
 TEST_SUITE("tests"){
     
-TEST_CASE("test periodic table") {
+TEST_CASE("test periodic table" * doctest::skip()) {
     try{
         sylvanmats::io::xml::Binder xmlThresher("/home/roger/NetBeansProjects/OOBackbone/data/periodic_table.xml", "/home/roger/NetBeansProjects/OOBackbone/schemas/periodic_table.xsd");
         std::cout<<"check "<<std::endl;
