@@ -13,6 +13,7 @@
 
 #include <cstdio>
 #include <ranges>
+
 #include "graph/container/compressed_graph.hpp"
 #include "graph/views/depth_first_search.hpp"
 
@@ -416,8 +417,9 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
         graph::vertex_id_t<G> vid=static_cast<graph::vertex_id_t<G>>(it - begin(graph::vertices(dagGraph)));
             {
                 std::u16string_view text(utf16.cbegin()+vertices[vid].angle_start+1, utf16.cbegin()+vertices[vid].angle_end);
-                auto[ret2, retExpr]=xp.expressPath(*this, vid, text, xp.expr);
-                if(!ret2) return hit;
+                //auto[ret2, retExpr]=xp.expressPath(*this, vid, text, xp.expr);
+                //if(!ret2)
+                 return hit;
             }
         auto dfs      = graph::views::vertices_depth_first_search(dagGraph, vid);
         size_t depth=dfs.depth();
@@ -434,8 +436,8 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                if(currentDepth==(xp.reserveSize-1)){
                     std::u16string_view text(utf16.cbegin()+vertices[uid].angle_start+1, utf16.cbegin()+vertices[uid].angle_end);
                     //std::cout<<"text "<<cv.to_bytes(std::u16string(text.begin(), text.end()))<<std::endl;
-                    auto[ret2, retExpr]=xp.expressPath(*this, uid, text, xp.expr);
-                    if(ret2){
+                    //auto[ret2, retExpr]=xp.expressPath(*this, uid, text, xp.expr);
+                    if(false){
                             std::any a=std::u16string_view(utf16.cbegin()+vertices[uid].angle_end+1, utf16.cbegin()+vertices[uid+1].angle_start);
                             if(apply(uid, std::u16string_view(utf16.cbegin()+vertices[uid].angle_start+1, utf16.cbegin()+vertices[uid].angle_end), a))hit=true;
                             if(hit)dfs.cancel(graph::cancel_search::cancel_all);

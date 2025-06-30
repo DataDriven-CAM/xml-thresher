@@ -17,10 +17,8 @@
 #include "io/xml/Path.h"
 #include "io/xml/Binder.h"
 
-#include "antlr4-runtime.h"
-#include "XPath31ParserBase.h"
-#include "parsing/XPath31Lexer.h"
-#include "parsing/XPath31Parser.h"
+#include "io/xpath/XPath31Lexer.h"
+#include "io/xpath/XPath31Parser.h"
 
 TEST_SUITE("paths"){
 TEST_CASE("test path as container")
@@ -39,14 +37,15 @@ TEST_CASE("test path as container")
 
 TEST_CASE("test antlrv4 xpath parsing"){
     std::string content="/pt:elements/pt:element[@symbol='C']";
-        antlr4::ANTLRInputStream input(content);
-        sylvanmats::XPath31Lexer lexer(&input);
-        antlr4::CommonTokenStream tokens(&lexer);
-
-        sylvanmats::XPath31Parser parser(&tokens);
-        parser.setBuildParseTree(true);
-        antlr4::tree::ParseTree* tree = parser.xpath();
-}
+    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
+    std::u16string utf16 = utf16conv.from_bytes(content);
+    /*sylvanmats::antlr4::parse::XPath31Parser xpath31Parser;
+    xpath31Parser(utf16, [](sylvanmats::antlr4::parse::LG& ldagGraph, sylvanmats::antlr4::parse::PG& dagGraph){
+        CHECK_EQ(graph::num_vertices(dagGraph), 18);
+        CHECK_EQ(graph::vertices(dagGraph).size(), 18);
+        CHECK_EQ(graph::num_edges(dagGraph), 17);
+    });*/
+ }
 
 TEST_CASE("test xpath expressions"){
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;

@@ -17,10 +17,10 @@
 
 #include "graph/container/compressed_graph.hpp"
 
-#include "antlr4-runtime.h"
-#include "io/xpath/XPath31ParserBase.h"
-#include "parsing/XPath31Lexer.h"
-#include "parsing/XPath31Parser.h"
+//#include "antlr4-runtime.h"
+//#include "io/xpath/XPath31ParserBase.h"
+//#include "parsing/XPath31Lexer.h"
+//#include "parsing/XPath31Parser.h"
 
 template<class Facet>
 struct word_facet : Facet
@@ -103,12 +103,12 @@ namespace sylvanmats::io::xml{
         
         std::wstring_convert<word_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
         std::string content{};
-        std::shared_ptr<antlr4::ANTLRInputStream> input;
+        /*std::shared_ptr<antlr4::ANTLRInputStream> input;
         std::shared_ptr<sylvanmats::XPath31Lexer> lexer;
         std::shared_ptr<antlr4::CommonTokenStream> tokens;
         std::shared_ptr<sylvanmats::XPath31Parser> parser;
         sylvanmats::XPath31Parser::XpathContext* tree;
-        sylvanmats::XPath31Parser::ExprContext* expr;
+        sylvanmats::XPath31Parser::ExprContext* expr;*/
         std::vector<ACTION> actions;
         std::u16string currentAttribute{};
         std::u16string currentValue{};
@@ -146,7 +146,7 @@ namespace sylvanmats::io::xml{
                 }
             }*/
             content=cv.to_bytes(pathRespresentation);
-            input.reset (new antlr4::ANTLRInputStream(content));
+            /*input.reset (new antlr4::ANTLRInputStream(content));
             lexer.reset(new sylvanmats::XPath31Lexer(input.get()));
             tokens.reset(new antlr4::CommonTokenStream(lexer.get()));
             parser.reset(new sylvanmats::XPath31Parser(tokens.get()));
@@ -154,7 +154,7 @@ namespace sylvanmats::io::xml{
             tree=parser->xpath();    
             
                 expr=tree->expr();
-                init(expr);
+                init(expr);*/
             };
         Path(const Path& orig) = default;
         Path(Path&& other) = default;
@@ -170,7 +170,7 @@ namespace sylvanmats::io::xml{
         Path& operator=(const Path& other) noexcept = default;
         Path& operator=(Path&& other) noexcept = default;
 
-            void init(sylvanmats::XPath31Parser::ExprContext* expr){
+            /*void init(sylvanmats::XPath31Parser::ExprContext* expr){
             std::vector<sylvanmats::XPath31Parser::ExprsingleContext *> es=expr->exprsingle();
             for(std::vector<sylvanmats::XPath31Parser::ExprsingleContext *>::iterator it=es.begin();it!=es.end();it++){
                 //std::cout<<"\tes "<<(*it)->getText()<<" "<<((*it)->forexpr())<<" "<<((*it)->letexpr())<<" "<<((*it)->quantifiedexpr())<<" "<<((*it)->ifexpr())<<" "<<((*it)->orexpr())<<std::endl;
@@ -234,13 +234,13 @@ namespace sylvanmats::io::xml{
                 }
             }
 
-            /*if (sylvanmats::XMPath31Parser::XpathContext* r=dynamic_cast<sylvanmats::XPath31Parser::XpathContext*>((*tree)) {
-           std::cout<<" is ExprContext "<<std::endl;
-            }*/
+            //if (sylvanmats::XMPath31Parser::XpathContext* r=dynamic_cast<sylvanmats::XPath31Parser::XpathContext*>((*tree)) {
+           //std::cout<<" is ExprContext "<<std::endl;
+            }//
 
-        };
+        };*/
 
-        std::tuple<bool, sylvanmats::XPath31Parser::ExprContext*> expressPath(sylvanmats::io::xml::Binder& binding, size_t index, std::u16string_view& text, sylvanmats::XPath31Parser::ExprContext* expr, size_t depth=0){
+        /*std::tuple<bool, sylvanmats::XPath31Parser::ExprContext*> expressPath(sylvanmats::io::xml::Binder& binding, size_t index, std::u16string_view& text, sylvanmats::XPath31Parser::ExprContext* expr, size_t depth=0){
             std::vector<sylvanmats::XPath31Parser::ExprsingleContext *> es=expr->exprsingle();
             bool ret=false;
             sylvanmats::XPath31Parser::ExprContext* currentExpr=nullptr;
@@ -304,9 +304,10 @@ namespace sylvanmats::io::xml{
                                                                 if(!antlrcpp::is<antlr4::tree::ErrorNode*>(enc->QName()) && antlrcpp::is<antlr4::tree::TerminalNode*>(enc->QName())){
                                                                 //std::cout<<"qName "<<enc->QName()->getText()<<std::endl;
                                                                 if(antlrcpp::is<antlr4::tree::TerminalNode*>(afsc->AT()))currentAttribute=cv.from_bytes(enc->QName()->getText());
+                                                                else if(!currentAttribute.empty())currentAttribute.clear();
                                                                 T word=cv.from_bytes(enc->QName()->getText());
                                                                 if(text.compare(word)==0)ret=true;
-                                                                //std::cout<<"\t? match "<<" "<<reserveSize<<std::endl;
+                                                                std::cout<<"\t? match "<<ret<<" "<<reserveSize<<" "<<cv.to_bytes(std::u16string(text))<<" "<<cv.to_bytes(std::u16string(word))<<" "<<cv.to_bytes(currentAttribute)<<std::endl;
                                                                 }
                                                                 }
                                                             }
@@ -337,17 +338,24 @@ namespace sylvanmats::io::xml{
                                                     }
                                                 }
                                                 if(antlrcpp::is<sylvanmats::XPath31Parser::PostfixexprContext*>((*stepIt)->postfixexpr())){
-                                                    sylvanmats::XPath31Parser::PostfixexprContext* pc=(*stepIt)->postfixexpr();
+                                                    sylvanmats::XPath31Parser::PostfixexprContext* pfc=(*stepIt)->postfixexpr();
                                                 //if(asc!=nullptr)std::cout<<"axisstep "<<asc->getText()<<std::endl;
                                                 //std::cout<<"postfixexpr "<<" "<<(*stepIt)->postfixexpr()->primaryexpr()<<" "<<(*stepIt)->postfixexpr()->predicate().size()<<" "<<(*stepIt)->postfixexpr()->argumentlist().size()<<" "<<(*stepIt)->postfixexpr()->lookup().size()<<std::endl;
-                                                    if(pc->primaryexpr()!=nullptr){
-                                                        if(pc->primaryexpr()->literal()!=nullptr){
-                                                            if(antlrcpp::is<antlr4::tree::TerminalNode*>(pc->primaryexpr()->literal()->StringLiteral())){
-                                                                currentValue=cv.from_bytes(pc->primaryexpr()->literal()->StringLiteral()->getText().substr(1, pc->primaryexpr()->literal()->StringLiteral()->getText().size()-2));
+                                                    if(pfc->primaryexpr()!=nullptr){
+                                                        if(pfc->primaryexpr()->literal()!=nullptr){
+                                                            if(antlrcpp::is<antlr4::tree::TerminalNode*>(pfc->primaryexpr()->literal()->StringLiteral())){
+                                                                currentValue=cv.from_bytes(pfc->primaryexpr()->literal()->StringLiteral()->getText().substr(1, pfc->primaryexpr()->literal()->StringLiteral()->getText().size()-2));
                                                             }
                                                             else
-                                                            currentValue=cv.from_bytes(pc->primaryexpr()->literal()->getText());
+                                                            currentValue=cv.from_bytes(pfc->primaryexpr()->literal()->getText());
                                                             //std::cout<<"\tprim lit "<<pc->primaryexpr()->literal()->getText()<<std::endl;
+                                                        }
+                                                    }
+                                                    if(!pfc->predicate().empty()){
+                                                        for(std::vector<sylvanmats::XPath31Parser::PredicateContext *>::iterator predIt=pfc->predicate().begin();predIt!=pfc->predicate().end();predIt++){
+                                                            currentExpr=(*predIt)->expr();
+                                                            std::cout<<"pred "<<cv.to_bytes(std::u16string(text))<<std::endl;
+                                                            expressPath(binding, index, text, currentExpr, depth);
                                                         }
                                                     }
                                                 }
@@ -366,7 +374,7 @@ namespace sylvanmats::io::xml{
                 }
             }
              return std::make_tuple(ret, currentExpr);       
-        };
+        };*/
 
         void reserve(T::size_type reserveSize){
             buffer=allocations.allocate(reserveSize);
@@ -412,4 +420,4 @@ namespace sylvanmats::io::xml{
 }
 
 
-    sylvanmats::io::xml::Path<std::u16string> operator"" _xp(const char16_t* c, size_t s);
+    sylvanmats::io::xml::Path<std::u16string> operator""_xp(const char16_t* c, size_t s);

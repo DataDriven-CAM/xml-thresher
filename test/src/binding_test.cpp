@@ -36,7 +36,11 @@ TEST_CASE("test note.xml"){
         std::cout<<" "<<cv.to_bytes(std::u16string(value.begin(), value.end()))<<std::endl;
         CHECK_EQ(value, u"My yoke is easy and my burden is light.");
     });
-    
+    sylvanmats::io::xml::Path<std::u16string> dPath(u"/note/from[@description]");
+    xmlReaper(dPath, [&cv](std::u16string_view& value){
+        std::cout<<" "<<cv.to_bytes(std::u16string(value.begin(), value.end()))<<std::endl;
+        CHECK_EQ(value, u"The Way");
+    });
 }
 
 TEST_CASE("test graphml schema")
