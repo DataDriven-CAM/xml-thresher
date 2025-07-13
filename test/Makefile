@@ -26,7 +26,7 @@ build/src/morphing_test.o: CXXFLAGS= -DNDEBUG -O3 -pthread -std=c++26 -I../inclu
 build/src/morphing_test.o: src/morphing_test.cpp
 	$(CXX) $(CXXFLAGS) -c -o build/src/morphing_test.o src/morphing_test.cpp
 
-test: CXXFLAGS= -DNDEBUG -O3 -pthread -std=c++26 -I../include -I../src -I../cpp_modules/doctest -I../cpp_modules/mio/include -I../cpp_modules/graph-v2/include -I../cpp_modules/zlib/dist/include -I../cpp_modules/antlr4/runtime/Cpp/run/include/antlr4-runtime -MMD -Wl,--allow-multiple-definition
+test: CXXFLAGS= -DNDEBUG -O3 -pthread -std=c++26 -I../include -I../src -I../cpp_modules/doctest -I../cpp_modules/mio/include -I../cpp_modules/graph-v2/include -I../cpp_modules/zlib/dist/include -I../cpp_modules/antlr4/runtime/Cpp/run/include/antlr4-runtime -MMD -I../cpp_modules/antlr4-thresher/include -Wl,--allow-multiple-definition
 test: src/test.cpp
 	$(CXX) $(CXXFLAGS) -c -o build/src/test.o src/test.cpp 
 

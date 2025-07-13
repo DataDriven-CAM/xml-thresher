@@ -37,5 +37,8 @@ build
 /documents/*.out
 /documents/*.pdf
 /documents/*.gz
+include/io/xml/XML*.h
+include/io/xpath/XPath31Lexer.h
+include/io/xpath/XPath31Parser.h
 src/parsing/
 cpp_modules/

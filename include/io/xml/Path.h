@@ -17,7 +17,6 @@
 
 #include "graph/container/compressed_graph.hpp"
 
-//#include "antlr4-runtime.h"
 //#include "io/xpath/XPath31ParserBase.h"
 //#include "parsing/XPath31Lexer.h"
 //#include "parsing/XPath31Parser.h"
