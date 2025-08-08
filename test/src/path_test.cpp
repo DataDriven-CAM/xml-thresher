@@ -39,17 +39,17 @@ TEST_CASE("test antlrv4 xpath parsing"){
     std::string content="/pt:elements/pt:element[@symbol='C']";
     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
     std::u16string utf16 = utf16conv.from_bytes(content);
-    /*sylvanmats::antlr4::parse::XPath31Parser xpath31Parser;
-    xpath31Parser(utf16, [](sylvanmats::antlr4::parse::LG& ldagGraph, sylvanmats::antlr4::parse::PG& dagGraph){
+    sylvanmats::antlr4::xpath::XPath31Parser xpath31Parser;
+    xpath31Parser(utf16, [](sylvanmats::antlr4::xpath::LG& ldagGraph, sylvanmats::antlr4::xpath::PG& dagGraph){
         CHECK_EQ(graph::num_vertices(dagGraph), 18);
         CHECK_EQ(graph::vertices(dagGraph).size(), 18);
         CHECK_EQ(graph::num_edges(dagGraph), 17);
-    });*/
+    });
  }
 
 TEST_CASE("test xpath expressions"){
     std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
-    std::filesystem::path expressionsPath="/home/roger/NodeProjects/grammars-v4/xpath/xpath31/examples/expressions.txt";
+    std::filesystem::path expressionsPath="../grammars-v4/xpath/xpath31/examples/expressions.txt";
     std::ifstream file(expressionsPath.string().c_str(), std::ios::in | std::ios::binary);
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::regex lines_regex("[^;^\n]+");

@@ -18,8 +18,6 @@
 #include "graph/container/compressed_graph.hpp"
 
 //#include "io/xpath/XPath31ParserBase.h"
-//#include "parsing/XPath31Lexer.h"
-//#include "parsing/XPath31Parser.h"
 
 template<class Facet>
 struct word_facet : Facet

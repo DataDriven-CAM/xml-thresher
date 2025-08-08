@@ -17,10 +17,8 @@
 #include "io/xml/Binder.h"
 #include "io/xml/XMLLexer.h"
 #include "io/xml/XMLParser.h"
-
-#include "antlr4-runtime.h"
-//#include "parsing/XMLLexer.h"
-//#include "parsing/XMLParser.h"
+#include "io/xpath/XPath31Lexer.h"
+#include "io/xpath/XPath31Parser.h"
 
 constexpr inline auto string_hash(const char *s) {
     unsigned long long hash{}, c{};
@@ -60,19 +58,38 @@ TEST_CASE("test fragment xml"){
 
     std::ifstream file("../../cifio/db/oxygen_fragments.graphml");
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-        CHECK_EQ(content.size(), 1016);
+        CHECK_EQ(content.size(),  1015);
     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
     std::u16string utf16 = utf16conv.from_bytes(content);
     sylvanmats::antlr4::xml::XMLParser xmlParser;
-    xmlParser(utf16, [](sylvanmats::antlr4::xml::LG& ldagGraph, sylvanmats::antlr4::xml::PG& dagGraph){
-        CHECK_EQ(graph::num_vertices(ldagGraph), 204);
-        CHECK_EQ(graph::vertices(ldagGraph).size(), 204);
-        CHECK_EQ(graph::num_edges(ldagGraph), 203);
-        CHECK_EQ(graph::num_vertices(dagGraph), 2);
-        CHECK_EQ(graph::vertices(dagGraph).size(), 2);
-        CHECK_EQ(graph::num_edges(dagGraph), 1);
+    xmlParser(utf16, [&utf16conv](sylvanmats::antlr4::xml::LG& ldagGraph, sylvanmats::antlr4::xml::PG& dagGraph){
+        CHECK_EQ(graph::num_vertices(ldagGraph), 265);
+        CHECK_EQ(graph::vertices(ldagGraph).size(), 265);
+        CHECK_EQ(graph::num_edges(ldagGraph), 264);
+        CHECK_EQ(graph::num_vertices(dagGraph), 112);
+        CHECK_EQ(graph::vertices(dagGraph).size(), 112);
+        CHECK_EQ(graph::num_edges(dagGraph), 111);
+        for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
+            graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
+            auto& ov=graph::vertex_value(dagGraph, o);
+            //std::cout<<ov.id<<" "<<ov.token<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
+            auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
+            //auto& lov=graph::vertex_value(ldagGraph, lo);
+            std::u16string vvStr(lov.start, lov.stop);
+            std::cout<<" "<<utf16conv.to_bytes(vvStr);
+            if(lov.token==sylvanmats::antlr4::xml::LEXER_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE)std::cout<<std::endl;
+        }
+
     });
 
+    std::string blockPath="/document/element/content/element\n";
+    std::u16string ublockPath = utf16conv.from_bytes(blockPath);
+    sylvanmats::antlr4::xpath::XPath31Parser xpath31Parser;
+    xpath31Parser(ublockPath, [](sylvanmats::antlr4::xpath::LG& ldagGraph, sylvanmats::antlr4::xpath::PG& dagGraph){
+        CHECK_EQ(graph::num_vertices(dagGraph), 3);
+        CHECK_EQ(graph::vertices(dagGraph).size(), 3);
+        CHECK_EQ(graph::num_edges(dagGraph), 2);
+    });
         // antlr4::ANTLRInputStream input(content);
         // sylvanmats::XMLLexer lexer(&input);
         // antlr4::CommonTokenStream tokens(&lexer);
