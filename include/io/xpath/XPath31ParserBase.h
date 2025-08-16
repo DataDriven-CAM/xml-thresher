@@ -1,14 +1,16 @@
 #pragma once
 
-#include "antlr4-runtime.h"
+#include "io/xpath/XPath31Lexer.h"
 
-namespace sylvanmats {
+namespace sylvanmats::antlr4::xpath {
     class XPath31Parser;
 
-    class XPath31ParserBase : public antlr4::Parser {
+    class XPath31ParserBase  {
+        private:
+        std::vector<ast_node> vertices;
     public:
-        XPath31ParserBase() = delete;
-        XPath31ParserBase(antlr4::TokenStream* input) : antlr4::Parser(input) {};
+        XPath31ParserBase() = default;
+        XPath31ParserBase(std::vector<ast_node>& vertices) : vertices (vertices) {};
         XPath31ParserBase(const XPath31ParserBase& orig) = delete;
         virtual ~XPath31ParserBase() = default;
 

@@ -16,7 +16,7 @@ all: LDFLAGS= -shared
 ifeq ($(OS),Windows_NT)
 all: LDFLAGS=" -Wl,--export-all-symbols ${LDFLAGS}"
 endif
-all: build/src/io/xml/Path.o build/src/io/xml/Binder.o build/src/io/xslt/Morpher.o 
+all: build/src/io/xml/Path.o build/src/io/xml/Binder.o build/src/io/xslt/Morpher.o build/src/io/xpath/XPath31ParserBase.o 
 	@mkdir -p $(@D)
 	#ld --help
 	$(CXX) $(LDFLAGS) -o $(libprefix)xmlthresher.$(ext) $(wildcard build/src/*.o) $(wildcard build/src/parsing/*.o) $(wildcard build/src/io/xpath/*.o) $(wildcard build/src/io/xml/*.o) $(wildcard build/src/io/xslt/*.o) 
@@ -37,3 +37,12 @@ build/src/io/xslt/Morpher.o: src/io/xslt/Morpher.cpp
 	@mkdir -p $(@D)
 	g++ --version
 	$(CXX) $(CXXFLAGS) -c -o build/src/io/xslt/Morpher.o src/io/xslt/Morpher.cpp
+
+build/src/io/xpath/XPath31ParserBase.o: CXXFLAGS= -DNDEBUG -O3 -fPIC -pthread -std=c++26 -Iinclude -Isrc -I$(MODULE_DIRECTORY)mio/include -I$(MODULE_DIRECTORY)graph-v2/include -I$(MODULE_DIRECTORY)zlib/dist/include -I$(MODULE_DIRECTORY)/antlr4-thresher/include  -MMD -MP
+build/src/io/xpath/XPath31ParserBase.o: src/io/xpath/XPath31ParserBase.cpp
+	@mkdir -p $(@D)
+	g++ --version
+	$(CXX) $(CXXFLAGS) -c -o build/src/io/xpath/XPath31ParserBase.o src/io/xpath/XPath31ParserBase.cpp
+
+clean:
+	rm -rf build

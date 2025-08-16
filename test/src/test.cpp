@@ -69,15 +69,25 @@ TEST_CASE("test fragment xml"){
         CHECK_EQ(graph::num_vertices(dagGraph), 114);
         CHECK_EQ(graph::vertices(dagGraph).size(), 114);
         CHECK_EQ(graph::num_edges(dagGraph), 113);
+        sylvanmats::antlr4::xml::PG xmlDagGraph;
+        std::vector<std::tuple<graph::vertex_id_t<sylvanmats::antlr4::xml::PG>, graph::vertex_id_t<sylvanmats::antlr4::xml::PG>, int>> xmlEdges;
+        std::stack<size_t> xmlAssociates;
+        xmlAssociates.push(0);
+        for(auto& v : graph::vertices(dagGraph)){
+            auto& vv=graph::vertex_value(dagGraph, v);
+            auto& lvv=graph::vertex_value(ldagGraph, ldagGraph[vv.id]);
+            if(lvv.token_start==sylvanmats::antlr4::xml::LEXER_OPEN || lvv.token_start==sylvanmats::antlr4::xml::LEXER_SPECIAL_OPEN){}
+            else if(lvv.token_start==sylvanmats::antlr4::xml::LEXER_CLOSE || lvv.token_start==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lvv.token_start==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE){}
+        }
         for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
             graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
             auto& ov=graph::vertex_value(dagGraph, o);
-            //std::cout<<ov.id<<" "<<ov.token<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
+            //std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
             auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
             //auto& lov=graph::vertex_value(ldagGraph, lo);
             std::u16string vvStr(lov.start, lov.stop);
             std::cout<<" "<<utf16conv.to_bytes(vvStr);
-            if(lov.token==sylvanmats::antlr4::xml::LEXER_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE)std::cout<<std::endl;
+            if(lov.token_start==sylvanmats::antlr4::xml::LEXER_CLOSE || lov.token_start==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lov.token_start==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE)std::cout<<std::endl;
         }
 
     });
@@ -162,12 +172,12 @@ TEST_CASE("test books xml"){
         for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
             graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
             auto& ov=graph::vertex_value(dagGraph, o);
-            //std::cout<<ov.id<<" "<<ov.token<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
+            //std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
             auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
             //auto& lov=graph::vertex_value(ldagGraph, lo);
             std::u16string vvStr(lov.start, lov.stop);
             std::cout<<" "<<utf16conv.to_bytes(vvStr);
-            if(lov.token==sylvanmats::antlr4::xml::LEXER_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE)std::cout<<std::endl;
+            if(lov.token_start==sylvanmats::antlr4::xml::LEXER_CLOSE || lov.token_start==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lov.token_start==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE)std::cout<<std::endl;
         }
 
     });
@@ -190,12 +200,12 @@ TEST_CASE("test desc xml"){
         for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
             graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
             auto& ov=graph::vertex_value(dagGraph, o);
-            //std::cout<<ov.id<<" "<<ov.token<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
+            //std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
             auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
             //auto& lov=graph::vertex_value(ldagGraph, lo);
             std::u16string vvStr(lov.start, lov.stop);
             std::cout<<" "<<utf16conv.to_bytes(vvStr);
-            if(lov.token==sylvanmats::antlr4::xml::LEXER_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE)std::cout<<std::endl;
+            if(lov.token_start==sylvanmats::antlr4::xml::LEXER_CLOSE || lov.token_start==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lov.token_start==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE)std::cout<<std::endl;
         }
 
     });
@@ -218,12 +228,12 @@ TEST_CASE("test underscore xml"){
         for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
             graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
             auto& ov=graph::vertex_value(dagGraph, o);
-            //std::cout<<ov.id<<" "<<ov.token<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
+            //std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
             auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
             //auto& lov=graph::vertex_value(ldagGraph, lo);
             std::u16string vvStr(lov.start, lov.stop);
             std::cout<<" "<<utf16conv.to_bytes(vvStr);
-            if(lov.token==sylvanmats::antlr4::xml::LEXER_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE)std::cout<<std::endl;
+            if(lov.token_start==sylvanmats::antlr4::xml::LEXER_CLOSE || lov.token_start==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lov.token_start==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE)std::cout<<std::endl;
         }
 
     });
@@ -246,12 +256,12 @@ TEST_CASE("test web xml"){
         for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
             graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
             auto& ov=graph::vertex_value(dagGraph, o);
-            //std::cout<<ov.id<<" "<<ov.token<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
+            //std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
             auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
             //auto& lov=graph::vertex_value(ldagGraph, lo);
             std::u16string vvStr(lov.start, lov.stop);
             std::cout<<" "<<utf16conv.to_bytes(vvStr);
-            if(lov.token==sylvanmats::antlr4::xml::LEXER_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lov.token==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE)std::cout<<std::endl;
+            if(lov.token_start==sylvanmats::antlr4::xml::LEXER_CLOSE || lov.token_start==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lov.token_start==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE)std::cout<<std::endl;
         }
 
     });
