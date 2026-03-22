@@ -10,8 +10,8 @@
 #include "fmt/ranges.h"
 
 #include "io/xml/Binder.h"
-#include "graph/views/depth_first_search.hpp"
-#include "graph/views/breadth_first_search.hpp"
+#include "graph/views/dfs.hpp"
+#include "graph/views/bfs.hpp"
 #include "graph/views/vertexlist.hpp"
 
 namespace sylanmats::io::tikz{
@@ -33,13 +33,15 @@ namespace sylanmats::io::tikz{
             std::wstring_convert<deletable_facet<std::codecvt<char16_t, char, std::mbstate_t>>, char16_t> cv;
             std::string tree;
             std::vector<int> visited(graph::num_edges(xmlBinder.dagGraph), 0);
-            auto it = std::ranges::find_if(graph::vertices(xmlBinder.dagGraph),
-                                     [&](auto& u) { return graph::vertex_value(xmlBinder.dagGraph, u).index == 0; });
-            graph::vertex_id_t<sylvanmats::io::xml::G> seed=static_cast<graph::vertex_id_t<sylvanmats::io::xml::G>>(it - begin(graph::vertices(xmlBinder.dagGraph)));
-            auto dfs      = graph::views::sourced_edges_depth_first_search(xmlBinder.dagGraph, seed);
+            auto it = std::ranges::find_if(xmlBinder.dagGraph.vertex_ids(),
+                                     [&](auto u) { return xmlBinder.dagGraph.vertex_value( u).index == 0; });
+            graph::vertex_id_t<sylvanmats::io::xml::G> seed=static_cast<graph::vertex_id_t<sylvanmats::io::xml::G>>(it - std::begin(xmlBinder.dagGraph.vertex_ids()));
+            auto dfs      = graph::views::edges_dfs(xmlBinder.dagGraph, seed);
             size_t depth=dfs.depth();
-            for (auto&& [uid,vid,uv] : dfs) {
-                if (size(graph::edges(xmlBinder.dagGraph, uid))==0) {
+            for (auto&& [e] : dfs) {
+                auto uid = static_cast<size_t>(graph::source_id(xmlBinder.dagGraph, e));
+                auto vid = static_cast<size_t>(graph::target_id(xmlBinder.dagGraph, e));
+                if (size(graph::views::incidence(xmlBinder.dagGraph, uid))==0) {
                   continue;
                 }
                 visited[uid]++;
@@ -71,10 +73,10 @@ namespace sylanmats::io::tikz{
                     }
                     tree.append(std::to_string(vValue.index));
                     tree.append("\"");
-                    if(size(graph::edges(xmlBinder.dagGraph, vid))==0)tree.append(" [mark]");
+                    if(size(graph::views::incidence(xmlBinder.dagGraph, vid))==0)tree.append(" [mark]");
                     visited[vid]++;
                   //}
-                    if(size(graph::edges(xmlBinder.dagGraph, vid))==0)tree.append("};\n");
+                    if(size(graph::views::incidence(xmlBinder.dagGraph, vid))==0)tree.append("};\n");
             }
             auto cArg=fmt::arg("tree", tree);
             //auto dArg=fmt::arg("leafs", indices);

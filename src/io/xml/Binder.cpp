@@ -15,7 +15,7 @@
 #include <ranges>
 
 #include "graph/container/compressed_graph.hpp"
-#include "graph/views/depth_first_search.hpp"
+#include "graph/views/dfs.hpp"
 
 #include "io/xml/Path.h"
 #include "io/xml/Binder.h"
@@ -51,11 +51,11 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
         std::cout<<"path "<<std::endl;
         sylvanmats::io::xml::Path<std::u16string>&& path=u"/xsd:schema/xsd:element"_xp;
         std::cout<<"path "<<path<<std::endl;
-        auto it = std::ranges::find_if(graph::vertices(xsdDAGGraph),
-                                 [&](auto& u) { return graph::vertex_value(xsdDAGGraph, u).index == 0; });
-        graph::vertex_id_t<G> vid=static_cast<graph::vertex_id_t<G>>(it - begin(graph::vertices(xsdDAGGraph)));
+        auto it = std::ranges::find_if(xsdDAGGraph.vertex_ids(),
+                                 [&](auto u) { return xsdDAGGraph.vertex_value(u).index == 0; });
+        graph::vertex_id_t<G> vid=static_cast<graph::vertex_id_t<G>>(it - std::begin(xsdDAGGraph.vertex_ids()));
         std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> cv;
-        auto& v=xsdDAGGraph[vid];
+        auto v=*graph::find_vertex(xsdDAGGraph, vid);
         std::cout<<"vid "<<vid<<std::endl;
         for (auto&& oe : graph::edges(xsdDAGGraph, v)) {
             auto oid=graph::target_id(xsdDAGGraph, oe);
@@ -239,17 +239,16 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
             std::cout<<"}"<<std::endl;*/
             using value = std::ranges::range_value_t<decltype(edges)>;
             graph::vertex_id_t<G> N = static_cast<graph::vertex_id_t<G>>(size(graph::vertices(dagGraph)));
-            using edge_desc  = graph::edge_info<graph::vertex_id_t<G>, true, void, int>;
-            dagGraph.reserve_vertices(vertices.size());
-            dagGraph.reserve_edges(edges.size());
-            dagGraph.load_edges(edges, [](const value& val) -> edge_desc {
+//            dagGraph.reserve_vertices(vertices.size());
+//            dagGraph.reserve_edges(edges.size());
+            dagGraph.load_edges(edges, [](const value& val) -> graph::copyable_edge_t<size_t, int>{
                     //std::cout<<"edge "<<std::get<0>(val)<<" "<<std::get<1>(val)<<" "<<std::get<2>(val)<<std::endl;
-                return edge_desc{std::get<0>(val), std::get<1>(val), std::get<2>(val)};
+                return {std::get<0>(val), std::get<1>(val), std::get<2>(val)};
               }, N);
-            dagGraph.load_vertices(vertices, [&](tag_indexer& nm) {
+            dagGraph.load_vertices(vertices, [&](const tag_indexer& nm) -> graph::copyable_vertex_t<graph::vertex_id_t<G>, tag_indexer>{
                 auto uid = static_cast<graph::vertex_id_t<G>>(&nm - vertices.data());
                 //std::cout<<"uid "<<uid<<std::endl;
-                return graph::copyable_vertex_t<graph::vertex_id_t<G>, tag_indexer>{uid, nm};
+                return {uid, nm};
               });
     }
     
@@ -412,26 +411,27 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
             if(apply(0, substr_view(jsonContent, vertices[0].start, vertices[0].end), vertices[0].value_index))hit=true;
             return hit;
         }*/
-        auto it = std::ranges::find_if(graph::vertices(dagGraph),
-                                 [&](auto& u) { return graph::vertex_value(dagGraph, u).index == 0; });
-        graph::vertex_id_t<G> vid=static_cast<graph::vertex_id_t<G>>(it - begin(graph::vertices(dagGraph)));
+        auto it = std::ranges::find_if(dagGraph.vertex_ids(),
+                                 [&](auto u) { return dagGraph.vertex_value(u).index == 0; });
+        graph::vertex_id_t<G> vid=static_cast<graph::vertex_id_t<G>>(it - std::begin(dagGraph.vertex_ids()));
             {
                 std::u16string_view text(utf16.cbegin()+vertices[vid].angle_start+1, utf16.cbegin()+vertices[vid].angle_end);
                 //auto[ret2, retExpr]=xp.expressPath(*this, vid, text, xp.expr);
                 //if(!ret2)
                  return hit;
             }
-        auto dfs      = graph::views::vertices_depth_first_search(dagGraph, vid);
+        auto dfs      = graph::views::vertices_dfs(dagGraph, vid);
         size_t depth=dfs.depth();
         size_t count=0;
         size_t count2=0;
-        for (auto&& [uid, u] : dfs) {
+        for (auto&& [u] : dfs) {
+            auto uid=graph::vertex_id(dagGraph, u);
           size_t currentDepth=graph::vertex_value(dagGraph, u).depth;
           count++;
           //if(currentDepth==0)continue;
           count2++;
           //currentDepth--;
-          if(currentDepth>=xp.reserveSize){dfs.cancel(graph::cancel_search::cancel_branch);continue;};
+          if(currentDepth>=xp.reserveSize){dfs.cancel(graph::views::cancel_search::cancel_branch);continue;};
          if(vertices[uid].forward_slashA==0){
                if(currentDepth==(xp.reserveSize-1)){
                     std::u16string_view text(utf16.cbegin()+vertices[uid].angle_start+1, utf16.cbegin()+vertices[uid].angle_end);
@@ -440,7 +440,7 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                     if(false){
                             std::any a=std::u16string_view(utf16.cbegin()+vertices[uid].angle_end+1, utf16.cbegin()+vertices[uid+1].angle_start);
                             if(apply(uid, std::u16string_view(utf16.cbegin()+vertices[uid].angle_start+1, utf16.cbegin()+vertices[uid].angle_end), a))hit=true;
-                            if(hit)dfs.cancel(graph::cancel_search::cancel_all);
+                            if(hit)dfs.cancel(graph::views::cancel_search::cancel_all);
                         /*bool ihit=false;
                         size_t parentObjSize=bisect(currentDepth, vertices[uid].index, ihit);
                         if(ihit){
@@ -459,7 +459,7 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
                     //graph::edge_value(g, v);
                     std::any a=std::u16string_view(utf16.cbegin()+vertices[oid].angle_end+1, utf16.cbegin()+vertices[oid+1].angle_start);
                     if(apply(vertices[oid].index, std::u16string_view(utf16.cbegin()+vertices[oid].angle_start+1, utf16.cbegin()+vertices[oid].angle_end), a))hit=true;
-                    if(hit)dfs.cancel(graph::cancel_search::cancel_all);
+                    if(hit)dfs.cancel(graph::views::cancel_search::cancel_all);
                 }
             }
         }

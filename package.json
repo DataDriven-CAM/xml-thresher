@@ -8,7 +8,8 @@
   "dependencies": {
     "mio": "mandreyel/mio",
     "openssl": "openssl/openssl#openssl-3.3.1",
-    "graph-v2": "stdgraph/graph-v2",
+    "expected" : "TartanLlama/expected",
+    "graph-v3": "stdgraph/graph-v3",
     "antlr4-thresher" : "DataDriven-CAM/antlr4-thresher",
     "antlr4": "antlr/antlr4",
     "zlib": "madler/zlib"

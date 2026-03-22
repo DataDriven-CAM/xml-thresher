@@ -20,6 +20,8 @@
 #include "io/xpath/XPath31Lexer.h"
 #include "io/xpath/XPath31Parser.h"
 
+#include "graph/views/depth_first_search.hpp"
+
 constexpr inline auto string_hash(const char *s) {
     unsigned long long hash{}, c{};
     for (auto p = s; *p; ++p, ++c) {
@@ -69,6 +71,19 @@ TEST_CASE("test fragment xml"){
         CHECK_EQ(graph::num_vertices(dagGraph), 114);
         CHECK_EQ(graph::vertices(dagGraph).size(), 114);
         CHECK_EQ(graph::num_edges(dagGraph), 113);
+
+        auto it = std::ranges::find_if(graph::vertices(dagGraph),
+                                 [&](auto& u) { return graph::vertex_value(dagGraph, u).id == 0; });
+        graph::vertex_id_t<sylvanmats::antlr4::xml::PG> source=static_cast<graph::vertex_id_t<sylvanmats::antlr4::xml::PG>>(it - begin(graph::vertices(dagGraph)));
+        auto dfs      = graph::views::vertices_depth_first_search(dagGraph, source);
+        for (auto&& [uid, u] : dfs) {
+            auto& uv=graph::vertex_value(dagGraph, u);
+          size_t currentId=uv.id;
+          size_t depth=dfs.depth();
+            auto& lov=graph::vertex_value(ldagGraph, ldagGraph[uv.id]);
+            std::u16string vvStr(lov.start, lov.stop);
+          std::cout<<" "<<uv.mode<<" "<<uv.parser_token<<" "<<currentId<<" "<<depth<<" "<<utf16conv.to_bytes(vvStr)<<std::endl;
+        }
         sylvanmats::antlr4::xml::PG xmlDagGraph;
         std::vector<std::tuple<graph::vertex_id_t<sylvanmats::antlr4::xml::PG>, graph::vertex_id_t<sylvanmats::antlr4::xml::PG>, int>> xmlEdges;
         std::stack<size_t> xmlAssociates;
@@ -82,7 +97,7 @@ TEST_CASE("test fragment xml"){
         for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
             graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
             auto& ov=graph::vertex_value(dagGraph, o);
-            //std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
+            std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
             auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
             //auto& lov=graph::vertex_value(ldagGraph, lo);
             std::u16string vvStr(lov.start, lov.stop);
