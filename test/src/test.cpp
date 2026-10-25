@@ -20,7 +20,7 @@
 #include "io/xpath/XPath31Lexer.h"
 #include "io/xpath/XPath31Parser.h"
 
-#include "graph/views/depth_first_search.hpp"
+#include "graph/views/dfs.hpp"
 
 constexpr inline auto string_hash(const char *s) {
     unsigned long long hash{}, c{};
@@ -72,15 +72,17 @@ TEST_CASE("test fragment xml"){
         CHECK_EQ(graph::vertices(dagGraph).size(), 114);
         CHECK_EQ(graph::num_edges(dagGraph), 113);
 
-        auto it = std::ranges::find_if(graph::vertices(dagGraph),
-                                 [&](auto& u) { return graph::vertex_value(dagGraph, u).id == 0; });
-        graph::vertex_id_t<sylvanmats::antlr4::xml::PG> source=static_cast<graph::vertex_id_t<sylvanmats::antlr4::xml::PG>>(it - begin(graph::vertices(dagGraph)));
-        auto dfs      = graph::views::vertices_depth_first_search(dagGraph, source);
-        for (auto&& [uid, u] : dfs) {
+        auto it = std::ranges::find_if(graph::vertices(dagGraph), [&](auto&& u) { 
+                return graph::vertex_value(dagGraph, u).id == 0; 
+            });
+        graph::vertex_id_t<sylvanmats::antlr4::xml::PG> source = graph::vertex_id(dagGraph, *it);
+        auto dfs      = graph::views::vertices_dfs(dagGraph, source);
+        for (auto&& [u] : dfs) {
+            auto uid=graph::vertex_id(dagGraph, u);
             auto& uv=graph::vertex_value(dagGraph, u);
           size_t currentId=uv.id;
           size_t depth=dfs.depth();
-            auto& lov=graph::vertex_value(ldagGraph, ldagGraph[uv.id]);
+            auto& lov=graph::vertex_value(ldagGraph, uv.id);
             std::u16string vvStr(lov.start, lov.stop);
           std::cout<<" "<<uv.mode<<" "<<uv.parser_token<<" "<<currentId<<" "<<depth<<" "<<utf16conv.to_bytes(vvStr)<<std::endl;
         }
@@ -88,17 +90,16 @@ TEST_CASE("test fragment xml"){
         std::vector<std::tuple<graph::vertex_id_t<sylvanmats::antlr4::xml::PG>, graph::vertex_id_t<sylvanmats::antlr4::xml::PG>, int>> xmlEdges;
         std::stack<size_t> xmlAssociates;
         xmlAssociates.push(0);
-        for(auto& v : graph::vertices(dagGraph)){
+        for(auto v : graph::vertices(dagGraph)){
             auto& vv=graph::vertex_value(dagGraph, v);
-            auto& lvv=graph::vertex_value(ldagGraph, ldagGraph[vv.id]);
+            auto& lvv=graph::vertex_value(ldagGraph, vv.id);
             if(lvv.token_start==sylvanmats::antlr4::xml::LEXER_OPEN || lvv.token_start==sylvanmats::antlr4::xml::LEXER_SPECIAL_OPEN){}
             else if(lvv.token_start==sylvanmats::antlr4::xml::LEXER_CLOSE || lvv.token_start==sylvanmats::antlr4::xml::LEXER_SLASH_CLOSE || lvv.token_start==sylvanmats::antlr4::xml::LEXER_SPECIAL_CLOSE){}
         }
-        for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
-            graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
+        for (auto&& [o, oe] : graph::views::out_incidence(dagGraph, 0)){
             auto& ov=graph::vertex_value(dagGraph, o);
             std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
-            auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
+            auto& lov=graph::vertex_value(ldagGraph, ov.id);
             //auto& lov=graph::vertex_value(ldagGraph, lo);
             std::u16string vvStr(lov.start, lov.stop);
             std::cout<<" "<<utf16conv.to_bytes(vvStr);
@@ -184,11 +185,10 @@ TEST_CASE("test books xml"){
         CHECK_EQ(graph::num_vertices(dagGraph), 355);
         CHECK_EQ(graph::vertices(dagGraph).size(), 355);
         CHECK_EQ(graph::num_edges(dagGraph), 354);
-        for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
-            graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
+        for (auto&& [o, oe] : graph::views::out_incidence(dagGraph, 0)){
             auto& ov=graph::vertex_value(dagGraph, o);
             //std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
-            auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
+            auto& lov=graph::vertex_value(ldagGraph, ov.id);
             //auto& lov=graph::vertex_value(ldagGraph, lo);
             std::u16string vvStr(lov.start, lov.stop);
             std::cout<<" "<<utf16conv.to_bytes(vvStr);
@@ -212,11 +212,10 @@ TEST_CASE("test desc xml"){
         CHECK_EQ(graph::num_vertices(dagGraph), 14);
         CHECK_EQ(graph::vertices(dagGraph).size(), 14);
         CHECK_EQ(graph::num_edges(dagGraph), 13);
-        for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
-            graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
+        for (auto&& [o, oe] : graph::views::out_incidence(dagGraph, 0)){
             auto& ov=graph::vertex_value(dagGraph, o);
             //std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
-            auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
+            auto& lov=graph::vertex_value(ldagGraph, ov.id);
             //auto& lov=graph::vertex_value(ldagGraph, lo);
             std::u16string vvStr(lov.start, lov.stop);
             std::cout<<" "<<utf16conv.to_bytes(vvStr);
@@ -240,11 +239,10 @@ TEST_CASE("test underscore xml"){
         CHECK_EQ(graph::num_vertices(dagGraph), 8);
         CHECK_EQ(graph::vertices(dagGraph).size(), 8);
         CHECK_EQ(graph::num_edges(dagGraph), 7);
-        for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
-            graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
+        for (auto&& [o, oe] : graph::views::out_incidence(dagGraph, 0)){
             auto& ov=graph::vertex_value(dagGraph, o);
             //std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
-            auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
+            auto& lov=graph::vertex_value(ldagGraph, ov.id);
             //auto& lov=graph::vertex_value(ldagGraph, lo);
             std::u16string vvStr(lov.start, lov.stop);
             std::cout<<" "<<utf16conv.to_bytes(vvStr);
@@ -268,11 +266,10 @@ TEST_CASE("test web xml"){
         CHECK_EQ(graph::num_vertices(dagGraph), 44);
         CHECK_EQ(graph::vertices(dagGraph).size(), 44);
         CHECK_EQ(graph::num_edges(dagGraph), 43);
-        for (auto&& oe : graph::edges(dagGraph, dagGraph[0])){
-            graph::container::csr_row<unsigned int>& o=dagGraph[graph::target_id(dagGraph, oe)];
+        for (auto&& [o, oe] : graph::views::out_incidence(dagGraph, 0)) {
             auto& ov=graph::vertex_value(dagGraph, o);
             //std::cout<<ov.id<<" "<<ov.token_start<<" "<<ov.parser_token<<" "<<ov.mode<<std::endl;
-            auto& lov=graph::vertex_value(ldagGraph, ldagGraph[ov.id]);
+            auto& lov=graph::vertex_value(ldagGraph, ov.id);
             //auto& lov=graph::vertex_value(ldagGraph, lo);
             std::u16string vvStr(lov.start, lov.stop);
             std::cout<<" "<<utf16conv.to_bytes(vvStr);

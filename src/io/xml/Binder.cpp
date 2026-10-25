@@ -238,7 +238,7 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
             }
             std::cout<<"}"<<std::endl;*/
             using value = std::ranges::range_value_t<decltype(edges)>;
-            graph::vertex_id_t<G> N = static_cast<graph::vertex_id_t<G>>(size(graph::vertices(dagGraph)));
+            graph::vertex_id_t<G> N = static_cast<graph::vertex_id_t<G>>(graph::vertices(dagGraph).size());
 //            dagGraph.reserve_vertices(vertices.size());
 //            dagGraph.reserve_edges(edges.size());
             dagGraph.load_edges(edges, [](const value& val) -> graph::copyable_edge_t<size_t, int>{
