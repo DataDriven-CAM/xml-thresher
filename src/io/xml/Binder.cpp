@@ -85,6 +85,11 @@ Binder::Binder(std::string xmlPath, std::string xsdPath) : loc (std::locale("en_
     
 }
 
+    Binder::Binder(std::string xmlContent) : loc (std::locale("en_US.UTF-8"), new std::codecvt_utf8<char16_t>){
+        std::u16string utf16 = utf16conv.from_bytes(xmlContent);
+        initializeGraph(utf16, depthProfile, dagGraph, vertices, edges, schemaComponentMap);
+    }
+
     void Binder::operator()(std::function<void(std::u16string& utf16, G& dagGraph)> apply){
         apply(utf16, dagGraph);
     }

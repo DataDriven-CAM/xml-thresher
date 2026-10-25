@@ -182,6 +182,7 @@ protected:
 public:
     Binder() = delete;
     Binder(std::string xmlPath, std::string xsdPath);
+    Binder(std::string xmlContent);
     Binder(const Binder& orig) = delete;
     virtual ~Binder() = default;
     
