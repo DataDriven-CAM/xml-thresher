@@ -3,20 +3,24 @@
 -include build/src/io/xml/Path.d
 
 all: LDFLAGS= -fuse-ld=gold -L../ -lxmlthresher -ldl -pthread 
-all: build/src/path_test.o build/src/binding_test.o build/src/morphing_test.o test
+all: build/src/binding_test.o build/src/metaphrase_test.o build/src/morphing_test.o build/src/path_test.o test
 	$(CXX) $(LDFLAGS) -o test $(wildcard build/src/*.o) 
-
-build/src/path_test.o: CXXFLAGS= -fconcepts-diagnostics-depth=2 -DNDEBUG -O3 -pthread -std=c++26 -I../include -I../src -I../include/io/xpath -I../src/parsing -I../cpp_modules/doctest -I../cpp_modules/mio/include -I../cpp_modules/expected/include -I../cpp_modules/graph-v3/include -I../cpp_modules/zlib/dist/include -I../cpp_modules/antlr4-thresher/include -MMD -Wl,--allow-multiple-definition
-build/src/path_test.o: src/path_test.cpp
-	$(CXX) $(CXXFLAGS) -c -o build/src/path_test.o src/path_test.cpp
 
 build/src/binding_test.o: CXXFLAGS= -DNDEBUG -O3 -pthread -std=c++26 -I../include -I../cpp_modules/doctest -I../src -I../src/parsing -I../cpp_modules/mio/include -I../cpp_modules/expected/include -I../cpp_modules/graph-v3/include -I../cpp_modules/fmt/dist/include -I../cpp_modules/zlib/dist/include -I../cpp_modules/antlr4-thresher/include -MMD -Wl,--allow-multiple-definition
 build/src/binding_test.o: src/binding_test.cpp
 	$(CXX) $(CXXFLAGS) -c -o build/src/binding_test.o src/binding_test.cpp
 
+build/src/metaphrase_test.o: CXXFLAGS= -DNDEBUG -O3 -pthread -std=c++26 -I../include -I../cpp_modules/doctest -I../src -I../src/parsing -I../cpp_modules/mio/include -I../cpp_modules/expected/include -I../cpp_modules/graph-v3/include -I../cpp_modules/fmt/dist/include -I../cpp_modules/zlib/dist/include -I../cpp_modules/antlr4-thresher/include -MMD -Wl,--allow-multiple-definition
+build/src/metaphrase_test.o: src/metaphrase_test.cpp
+	$(CXX) $(CXXFLAGS) -c -o build/src/metaphrase_test.o src/metaphrase_test.cpp
+
 build/src/morphing_test.o: CXXFLAGS= -DNDEBUG -O3 -pthread -std=c++26 -I../include -I../cpp_modules/doctest -I../src -I../src/parsing -I../cpp_modules/mio/include -I../cpp_modules/expected/include -I../cpp_modules/graph-v3/include -I../cpp_modules/fmt/dist/include -I../cpp_modules/zlib/dist/include -I../cpp_modules/antlr4-thresher/include -MMD -Wl,--allow-multiple-definition
 build/src/morphing_test.o: src/morphing_test.cpp
 	$(CXX) $(CXXFLAGS) -c -o build/src/morphing_test.o src/morphing_test.cpp
+
+build/src/path_test.o: CXXFLAGS= -fconcepts-diagnostics-depth=2 -DNDEBUG -O3 -pthread -std=c++26 -I../include -I../src -I../include/io/xpath -I../src/parsing -I../cpp_modules/doctest -I../cpp_modules/mio/include -I../cpp_modules/expected/include -I../cpp_modules/graph-v3/include -I../cpp_modules/zlib/dist/include -I../cpp_modules/antlr4-thresher/include -MMD -Wl,--allow-multiple-definition
+build/src/path_test.o: src/path_test.cpp
+	$(CXX) $(CXXFLAGS) -c -o build/src/path_test.o src/path_test.cpp
 
 test: CXXFLAGS= -DNDEBUG -O3 -pthread -std=c++26 -I../include -I../src -I../cpp_modules/doctest -I../cpp_modules/mio/include -I../cpp_modules/expected/include -I../cpp_modules/graph-v3/include -I../cpp_modules/zlib/dist/include -MMD -I../cpp_modules/antlr4-thresher/include -Wl,--allow-multiple-definition
 test: src/test.cpp
